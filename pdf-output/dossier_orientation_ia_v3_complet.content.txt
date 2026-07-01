@@ -1,0 +1,133 @@
+Dossier Technique & Fonctionnel Intégré V3 - Projet Orientation IA                1
+en Option Premium. 
+Modifications majeures : Intégration du Test de QI Gratuit & Passage du Téléchargement de Rapport Initial
+Date de mise à jour : 16 juin 2026
+Version Document : 3.0 (Master Document Centralisé - Post Pivot)
+Projet : Plateforme Web Intelligente d'Orientation & Planification de Carrière IA
+PRODUIT & TESTS
+CAHIER DES CHARGES, LISTE DES FONCTIONNALITÉS, FICHE
+FONCTIONNEL INTEGRÉ
+DOSSIER TECHNIQUE &
+----------------Page (0) Break----------------
+Dossier Technique & Fonctionnel Intégré V3 - Projet Orientation IA                2
+exercé.
+• Le syndrome de désillusion tardive : Prise de conscience préjudiciable de l'inadéquation avec le métier
+QI et d'aptitudes), des typologies de personnalité et des axes de vulnérabilité.
+• L'asymétrie de connaissance de soi : Méconnaissance critique des forces cognitives (mesurées par le test de
+aspirations.
+• L'orientation passive ou par défaut : Choix de filières basés sur l'absence d'idées plutôt que sur de réelles
+1.2 Problématiques Métier Cibles
+l'abonnement. 
+devient une fonctionnalité exclusivement payante (Premium), incitant fortement l'utilisateur à passer à
+gratuitement. À l'inverse, l'export/téléchargement au format PDF de n'importe quel rapport de synthèse
+conversion monétaire, le Test de QI (Quotient Intellectuel) complet est désormais accessible 100%
+Mise à jour Stratégique V3 : Pour maximiser l'acquisition utilisateur tout en optimisant le tunnel de
+lui proposer une trajectoire de carrière optimale, objective et territorialement ancrée. 
+artificielle et d'analyse prédictive, la plateforme réalise un audit holistique et scientifique du profil de l'utilisateur pour
+professionnelle, la planification de carrière et l'accompagnement continu. S'appuyant sur des moteurs d'intelligence
+Le projet consiste à concevoir et déployer une plateforme web cloud de nouvelle génération dédiée à l'orientation
+1.1 Vision du Projet
+1. Vision & Objectifs Stratégiques
+----------------Page (1) Break----------------
+Dossier Technique & Fonctionnel Intégré V3 - Projet Orientation IA                3
+tarifaires de la version 3.0.
+Le tableau ci-dessous récapitule l'ensemble de la feuille de fonctionnalités de la plateforme, incluant les pivots
+(Freemium)
+2. Architecture du Parcours Utilisateur & Grille Tarifaire
+----------------Page (2) Break----------------
+Dossier Technique & Fonctionnel Intégré V3 - Projet Orientation IA                4
+de quiz et graphe de progression.
+curation automatisée de cours en ligne (MOOCs), génération
+PREMIUM
+Assistant AutodidacteLMS Personnel : Scannage des compétences manquantes,
+l'utilisateur pour un dialogue itératif.
+LLM fine-tuné possédant la mémoire complète du dossier de
+PREMIUM
+Conseiller IA 24/7  Agent Conversationnel Contextuel : Chatbot alimenté par un
+certifications indispensables, stages).
+chronologique inversé depuis l'objectif cible (études,
+PREMIUM
+Roadmap de CarrièreRétro-Planificateur de Carrière : Générateur de parcours
+évolution à 5 ans).
+Emploi externes (grilles salariales, taux de tension réels,
+PREMIUM
+Données Marché LiveFiltre de cohérence économique basé sur des flux d'API
+Opportunités).
+SWOT personnalisée (Forces, Faiblesses, Risques,
+PREMIUM
+Rapport IA Complet  Analyse holistique approfondie à l'écran intégrant la matrice
+(Ajustement V3)    Bloqué en mode gratuit.
+synthèse (scores bruts, score de QI, jauge de compatibilité). 
+PREMIUM
+Téléchargement RapportExport et téléchargement au format PDF du rapport initial de
+l'écran sur le Dashboard.
+pour calculer un score de compatibilité de base visible à
+GRATUIT
+Analyse Métier de RêveTraitement par NLP du champ libre ("Pourquoi ce métier ?")
+calcul immédiat du score.
+Raven, d'aptitudes spatiales, numériques et verbales avec
+(Nouveau)        psychométriques standardisés de logique pure, de matrice de
+GRATUIT
+Test de QI Centralisé Évaluation complète du Quotient Intellectuel : tests
+psychométriques (Soft Skills).
+GRATUIT
+Moteur de Tests (Base)Questionnaire dynamique adaptatif mesurant 10 traits
+moteur de matching.
+Intérêts         Les matières détestées créent des tags d'exclusion pour le
+GRATUIT
+Bilan Académique &  Analyseur Académique : Saisie des diplômes, filières et notes.
+la localisation, des contraintes budgétaires et géographiques.
+GRATUIT
+Profil Utilisateur  Formulaire Civil Intelligent : Ingestion dynamique de l'âge, de
+Module Fonctionnel  Description de la Fonctionnalité & Logique MétierNiveau d'Accès
+----------------Page (3) Break----------------
+Dossier Technique & Fonctionnel Intégré V3 - Projet Orientation IA                5
+ciblées dans la Roadmap, une notification d'alerte de faisabilité critique doit être intégrée au tableau de bord.
+• Filtre de Réalité Économique : Si le budget d'études déclaré est inférieur au coût moyen des universités
+avancés déclenche le blocage de l'action et l'affichage d'un pop-up modal d'incitation à l'abonnement Premium.
+• Étanchéité du Paywall : Tout clic d'un utilisateur gratuit sur le téléchargement du rapport ou sur les modules IA
+3.3 Règles de Gestion & Contraintes Système Majeures
+erreur de type `402 Payment Required`. 
+l'utilisateur possède le statut `Gratuit`, le serveur Back-End doit interdire la génération du fichier binaire et lever une
+du bilan de QI) est soumis à la vérification du token d'abonnement actif dans l'en-tête de la requête HTTP. Si
+L'accès aux boutons "Télécharger mon rapport en PDF" ou "Exporter ma synthèse" (qu'il s'agisse du bilan initial ou
+3.2 Spécification du Paywall d'Export PDF (Fonctionnalité F-PDF)
+immédiatement consultable sur le Dashboard web gratuitement. 
+par rapport à la population de référence de l'âge de l'utilisateur. Le score est stocké en base de données et est
+suites numériques, analogies verbales et rotation spatiale. Les réponses fournies permettent de calculer l'écart-type
+Le module de Test de QI doit être segmenté en 4 sous-sections chronométrées autonomes : logique matricielle,
+3.1 Spécification du Module Test de QI (Fonctionnalité F-QI)
+3. Fiche Produit : Spécifications et Logiques Métier Clés
+----------------Page (4) Break----------------
+Dossier Technique & Fonctionnel Intégré V3 - Projet Orientation IA                6
+réponse en langage naturel.
+la session.               l'utilisateur pour formuler sa
+IA               faiblesses ?" au chatbot au cours dedonnées psychométriques de
+FT-06   Mémoire du ConseillerPoser la question "Quelles sont mesLe LLM extrait correctement les
+cursus.
+ligne".                  concernant le financement du
+Économique        an et viser le métier de "Pilote deune alerte de criticité bloquante
+FT-05   Filtre de CohérenceDéclarer un budget études de 1 000 €/Le moteur de faisabilité émet
+Métiers.
+d'Ingénieur chimiste du Top
+(Exclusion)      dans le champ "Matières détestées".d'exclusion bloquant les métiers
+FT-04   Formulaire AcadémiqueSaisir la mention "Physique-Chimie"Le système génère un tag
+l'utilisateur.
+un profil Premium.         instantanément sur l'appareil de
+PDF-03   (Compte Premium)  mon Rapport de QI en PDF" depuisserveur et se télécharge
+FT-    Téléchargement    Cliquer sur le bouton "TéléchargerLe fichier PDF se génère côté
+télécharger vos rapports".
+(Compte Gratuit)  un profil gratuit.         "Passez à l'offre Premium pour
+PDF-02   Téléchargement    mon Rapport de QI en PDF" depuisbloquée. Un pop-up s'ouvre :
+FT-    Paywall         Cliquer sur le bouton "TéléchargerL'action de téléchargement est
+barrière de paiement.
+réponses.                Dashboard sans aucune
+terminer le test de QI et soumettre lescorrectement à l'écran sur le
+FT-QI-01 Test de QI Gratuit Se connecter avec un compte gratuit,Le score final (ex: 115) s'affiche
+(Validation)
+ID Test Fonctionnalité CibleAction / Scénario de Test
+Comportement Attendu
+téléchargements de rapports.
+Matrice   de   tests   fonctionnels   (UAT)   modifiée   pour   inclure   le   test   de   QI   gratuit   et   la   restriction   sur   les
+4. Cahier de Recette : Tests Applicatifs mis à jour (V3)
+----------------Page (5) Break----------------
