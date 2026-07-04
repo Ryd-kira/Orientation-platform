@@ -54,6 +54,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/courses', [AssistantController::class, 'suggestCourses']);
     });
 
+    Route::post('/subscriptions/checkout', [SubscriptionController::class, 'checkout']);
     Route::post('/subscriptions/activate', [SubscriptionController::class, 'activate']);
     Route::get('/subscriptions/status', [SubscriptionController::class, 'status']);
 
