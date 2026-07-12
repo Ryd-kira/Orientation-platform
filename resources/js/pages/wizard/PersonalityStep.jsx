@@ -40,30 +40,43 @@ export default function PersonalityStep() {
 
   return (
     <WizardContainer>
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 space-y-4">
-        <p className="text-sm text-gray-500 dark:text-gray-400">
-          Évalue chacun de ces traits de personnalité sur une échelle de 0 à 100.
-        </p>
-
+      <div className="rounded-4xl bg-white p-8 shadow-[0_25px_70px_-40px_rgba(15,23,42,0.08)] ring-1 ring-slate-200 space-y-6">
         <div className="space-y-3">
+          <p className="text-sm text-slate-600">
+            Évalue chaque trait sur une échelle de 0 à 100 pour affiner la compréhension de votre personnalité.
+          </p>
+          <div className="rounded-3xl bg-slate-50 p-5 ring-1 ring-slate-200">
+            <p className="text-sm font-semibold text-slate-900">Traits de personnalité</p>
+            <p className="mt-2 text-sm text-slate-500">Plus vos réponses sont précises, plus le matching métier est pertinent.</p>
+          </div>
+        </div>
+
+        <div className="space-y-4">
           {TRAITS.map((trait) => (
-            <div key={trait}>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{trait}</label>
-              <input type="range" min="0" max="100" value={scores[trait] || 50}
+            <div key={trait} className="rounded-3xl bg-slate-50 p-4 ring-1 ring-slate-200">
+              <div className="flex items-center justify-between gap-4">
+                <p className="text-sm font-medium text-slate-700">{trait}</p>
+                <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-500">{scores[trait] || 50}%</span>
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={scores[trait] || 50}
                 onChange={(e) => setTraitScore(trait, e.target.value)}
-                className="w-full" />
-              <span className="text-xs text-gray-400">{scores[trait] || 50}/100</span>
+                className="mt-4 w-full accent-cyan-600"
+              />
             </div>
           ))}
         </div>
 
         <button onClick={handleSubmit} disabled={!allFilled || mutation.isPending}
-          className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 font-medium">
+          className="w-full rounded-full bg-cyan-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-cyan-500 disabled:opacity-50">
           {mutation.isPending ? 'Envoi...' : 'Suivant →'}
         </button>
 
         {mutation.isError && (
-          <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm">
+          <div className="rounded-3xl bg-red-50 border border-red-200 p-4 text-sm text-red-700">
             {mutation.error?.response?.data?.message || "Erreur d'enregistrement"}
           </div>
         )}

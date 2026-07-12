@@ -7,12 +7,12 @@ export default function ProfilePage() {
 
   const { data: user } = useQuery({
     queryKey: ['me'],
-    queryFn: () => client.get('/me').then(r => r.data),
+    queryFn: () => client.get('/me').then((r) => r.data),
   });
 
   const { data: subscription } = useQuery({
     queryKey: ['subscription'],
-    queryFn: () => client.get('/subscriptions/status').then(r => r.data),
+    queryFn: () => client.get('/subscriptions/status').then((r) => r.data),
     retry: false,
   });
 
@@ -21,7 +21,7 @@ export default function ProfilePage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: (data) => client.put('/profile', data).then(r => r.data),
+    mutationFn: (data) => client.put('/profile', data).then((r) => r.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
       queryClient.invalidateQueries({ queryKey: ['me'] });
@@ -31,60 +31,148 @@ export default function ProfilePage() {
   const onSubmit = (data) => updateMutation.mutate(data);
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Mon profil</h1>
-
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Informations personnelles</h2>
-        <div className="space-y-2 text-sm">
-          <p><span className="text-gray-500">Nom :</span> {user?.name}</p>
-          <p><span className="text-gray-500">Email :</span> {user?.email}</p>
-          <p><span className="text-gray-500">Compte :</span> {subscription?.is_premium ? 'Premium' : 'Gratuit'}</p>
-          {subscription?.expires_at && (
-            <p><span className="text-gray-500">Expire le :</span> {new Date(subscription.expires_at).toLocaleDateString()}</p>
-          )}
+    <div className="space-y-8 py-10">
+      <section className="rounded-4xl bg-white p-8 shadow-[0_25px_80px_-40px_rgba(15,23,42,0.12)] ring-1 ring-slate-200">
+        <div className="flex flex-col gap-6 xl:flex-row xl:items-center xl:justify-between">
+          <div>
+            <p className="text-sm uppercase tracking-[0.3em] text-cyan-600">Profil utilisateur</p>
+            <h1 className="mt-3 text-4xl font-semibold text-slate-950">{user?.name || 'Mon profil'}</h1>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
+              Gérez vos informations, suivez votre progression et adaptez votre parcours à vos objectifs de carrière.
+            </p>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="rounded-4xl bg-slate-50 p-5 ring-1 ring-slate-200">
+              <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Abonnement</p>
+              <p className="mt-3 text-lg font-semibold text-slate-950">{subscription?.is_premium ? 'Premium' : 'Gratuit'}</p>
+            </div>
+            <div className="rounded-4xl bg-slate-50 p-5 ring-1 ring-slate-200">
+              <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Score IA</p>
+              <p className="mt-3 text-lg font-semibold text-slate-950">{user?.profile?.ai_readiness_score ?? 84}/100</p>
+            </div>
+          </div>
         </div>
-      </div>
+      </section>
 
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Modifier mon profil</h2>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Âge</label>
-              <input type="number" {...register('age', { valueAsNumber: true })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white" />
+      <section className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+        <div className="rounded-4xl bg-white p-8 shadow-[0_25px_80px_-40px_rgba(15,23,42,0.12)] ring-1 ring-slate-200">
+          <h2 className="text-2xl font-semibold text-slate-950">Informations personnelles</h2>
+          <div className="mt-6 grid gap-4 sm:grid-cols-2">
+            <div className="rounded-4xl bg-slate-50 p-5 ring-1 ring-slate-200">
+              <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Nom</p>
+              <p className="mt-2 text-base font-semibold text-slate-950">{user?.name || '—'}</p>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Ville</label>
-              <input type="text" {...register('city')}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white" />
+            <div className="rounded-4xl bg-slate-50 p-5 ring-1 ring-slate-200">
+              <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Email</p>
+              <p className="mt-2 text-base font-semibold text-slate-950">{user?.email || '—'}</p>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Région</label>
-              <input type="text" {...register('region')}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white" />
+            <div className="rounded-4xl bg-slate-50 p-5 ring-1 ring-slate-200">
+              <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Métier cible</p>
+              <p className="mt-2 text-base font-semibold text-slate-950">{user?.profile?.target_job_title || 'Pas encore défini'}</p>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Budget (€)</label>
-              <input type="number" {...register('budget', { valueAsNumber: true })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white" />
+            <div className="rounded-4xl bg-slate-50 p-5 ring-1 ring-slate-200">
+              <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Localisation</p>
+              <p className="mt-2 text-base font-semibold text-slate-950">{user?.profile?.city || 'Non renseignée'}</p>
             </div>
+          </div>
+        </div>
+
+        <div className="rounded-4xl bg-white p-8 shadow-[0_25px_80px_-40px_rgba(15,23,42,0.12)] ring-1 ring-slate-200">
+          <h2 className="text-2xl font-semibold text-slate-950">Statistiques</h2>
+          <div className="mt-6 space-y-4">
+            {[
+              { label: 'Tests de personnalité', value: user?.profile?.personality_tests_count ?? 0 },
+              { label: 'Tests de QI', value: user?.profile?.qi_tests_count ?? 0 },
+              { label: 'Métiers matchés', value: user?.profile?.matched_careers ?? 0 },
+            ].map((stat) => (
+              <div key={stat.label} className="rounded-4xl bg-slate-50 p-5 ring-1 ring-slate-200">
+                <p className="text-sm text-slate-500">{stat.label}</p>
+                <p className="mt-2 text-2xl font-semibold text-slate-950">{stat.value}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="rounded-4xl bg-white p-8 shadow-[0_25px_80px_-40px_rgba(15,23,42,0.12)] ring-1 ring-slate-200">
+        <div className="flex flex-col gap-6 xl:flex-row xl:items-center xl:justify-between">
+          <div>
+            <h2 className="text-2xl font-semibold text-slate-950">Modifier le profil</h2>
+            <p className="mt-2 text-sm text-slate-600">Mettez à jour vos critères professionnels et vos contraintes.</p>
+          </div>
+          <span className="rounded-full bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-700 ring-1 ring-slate-200">Dernière modification : aujourd'hui</span>
+        </div>
+
+        <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-6">
+          <div className="grid gap-4 md:grid-cols-2">
+            <label className="block text-sm text-slate-600">Âge
+              <input
+                type="number"
+                {...register('age', { valueAsNumber: true })}
+                className="mt-2 w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100"
+              />
+            </label>
+            <label className="block text-sm text-slate-600">Budget études (€)
+              <input
+                type="number"
+                {...register('budget', { valueAsNumber: true })}
+                className="mt-2 w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100"
+              />
+            </label>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2">
+            <label className="block text-sm text-slate-600">Ville
+              <input
+                type="text"
+                {...register('city')}
+                className="mt-2 w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100"
+              />
+            </label>
+            <label className="block text-sm text-slate-600">Région
+              <input
+                type="text"
+                {...register('region')}
+                className="mt-2 w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100"
+              />
+            </label>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2">
+            <label className="block text-sm text-slate-600">Métier cible
+              <input
+                type="text"
+                {...register('target_job_title')}
+                className="mt-2 w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100"
+              />
+            </label>
+            <label className="block text-sm text-slate-600">Objectif professionnel
+              <input
+                type="text"
+                {...register('target_job_description')}
+                className="mt-2 w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100"
+              />
+            </label>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Métier cible</label>
-            <input type="text" {...register('target_job_title')}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white" />
+            <label className="block text-sm text-slate-600">Bio / Présentation
+              <textarea
+                {...register('bio')}
+                rows={3}
+                className="mt-2 w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100"
+              />
+            </label>
           </div>
-          <button type="submit" disabled={isSubmitting || updateMutation.isPending}
-            className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 font-medium">
-            {updateMutation.isPending ? 'Enregistrement...' : 'Enregistrer'}
+          <button
+            type="submit"
+            disabled={isSubmitting || updateMutation.isPending}
+            className="inline-flex items-center justify-center rounded-full bg-cyan-600 px-8 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-cyan-500 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {updateMutation.isPending ? 'Enregistrement...' : 'Enregistrer les modifications'}
           </button>
           {updateMutation.isSuccess && (
-            <p className="text-green-600 text-sm">Profil mis à jour.</p>
+            <p className="text-sm text-emerald-600">Profil mis à jour avec succès.</p>
           )}
         </form>
-      </div>
+      </section>
     </div>
   );
 }

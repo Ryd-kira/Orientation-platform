@@ -26,12 +26,15 @@ class AuthController extends Controller
             'password' => Hash::make($validated['password']),
         ]);
 
+        $token = $user->createToken('auth-token')->plainTextToken;
+
         Auth::login($user);
 
         $request->session()->regenerate();
 
         return response()->json([
             'user' => $user->load(['profile', 'academicRecords']),
+            'token' => $token,
         ], 201);
     }
 
@@ -48,10 +51,13 @@ class AuthController extends Controller
             ]);
         }
 
+        $token = Auth::user()->createToken('auth-token')->plainTextToken;
+
         $request->session()->regenerate();
 
         return response()->json([
             'user' => Auth::user()->load(['profile', 'academicRecords']),
+            'token' => $token,
         ]);
     }
 

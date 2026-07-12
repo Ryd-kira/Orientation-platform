@@ -17,7 +17,7 @@ export default function PaymentSuccessPage() {
         payment_method: 'stripe',
         transaction_id: sessionId,
         duration_months: parseInt(duration),
-      }).then(r => r.data),
+      }).then((r) => r.data),
     onSuccess: () => {
       setStatus('success');
       setTimeout(() => navigate('/dashboard'), 2000);
@@ -34,45 +34,41 @@ export default function PaymentSuccessPage() {
   }, []);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 max-w-md w-full text-center">
+    <div className="min-h-screen bg-slate-50 px-4 py-16 flex items-center justify-center">
+      <div className="max-w-md w-full rounded-4xl bg-white p-10 shadow-[0_25px_80px_-40px_rgba(15,23,42,0.16)] ring-1 ring-slate-200 text-center">
         {status === 'processing' && (
           <>
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4" />
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-              Activation de votre abonnement...
-            </h1>
-            <p className="text-gray-500">Veuillez patienter.</p>
+            <div className="animate-spin rounded-full h-14 w-14 border-b-4 border-cyan-600 mx-auto mb-5" />
+            <h1 className="text-2xl font-semibold text-slate-950 mb-2">Activation de votre abonnement...</h1>
+            <p className="text-slate-600">Veuillez patienter pendant que nous activons votre accès Premium.</p>
           </>
         )}
 
         {status === 'success' && (
           <>
-            <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
+              <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-              Paiement réussi !
-            </h1>
-            <p className="text-gray-500">Vous êtes maintenant membre Premium. Redirection...</p>
+            <h1 className="text-2xl font-semibold text-slate-950 mb-2">Paiement réussi !</h1>
+            <p className="text-slate-600">Votre abonnement Premium est activé. Vous serez redirigé vers le dashboard.</p>
           </>
         )}
 
         {status === 'error' && (
           <>
-            <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-6 h-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-red-100 text-red-600">
+              <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </div>
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-              Erreur
-            </h1>
-            <p className="text-gray-500 mb-4">Une erreur est survenue. Contactez le support.</p>
-            <button onClick={() => navigate('/pricing')}
-              className="px-6 py-2 bg-indigo-600 text-white rounded-lg">
+            <h1 className="text-2xl font-semibold text-slate-950 mb-2">Activation échouée</h1>
+            <p className="text-slate-600 mb-5">Une erreur est survenue lors de l’activation. Veuillez réessayer ou contacter le support.</p>
+            <button
+              onClick={() => navigate('/pricing')}
+              className="inline-flex rounded-full bg-cyan-600 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-cyan-500"
+            >
               Réessayer
             </button>
           </>

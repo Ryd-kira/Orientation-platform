@@ -2,85 +2,160 @@ import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import client from '../../api/client';
 import { useAuth } from '../../contexts/AuthContext';
-import { WIZARD_STEPS } from '../../types';
 
 export default function DashboardPage() {
   const { user } = useAuth();
 
   const { data: profile } = useQuery({
     queryKey: ['profile'],
-    queryFn: () => client.get('/profile').then(r => r.data),
+    queryFn: () => client.get('/profile').then((r) => r.data),
     retry: false,
   });
 
   const { data: subscription } = useQuery({
     queryKey: ['subscription'],
-    queryFn: () => client.get('/subscriptions/status').then(r => r.data),
+    queryFn: () => client.get('/subscriptions/status').then((r) => r.data),
     retry: false,
   });
 
-  const isPremium = subscription?.is_premium;
+  const readiness = profile?.ai_readiness_score ?? 115;
+  const careerTarget = profile?.target_job_title || 'Data Scientist';
+  const compatibility = profile?.career_match_score ?? 87;
+  const financialFit = profile?.financial_fit_score ?? 45;
 
-  const stats = [
-    { label: 'Tests de personnalité', value: profile?.personality_tests_count ?? 0, link: '/wizard/personnalite' },
-    { label: 'Tests de QI', value: profile?.qi_tests_count ?? 0, link: '/wizard/aptitudes' },
-    { label: 'Métiers matchés', value: profile?.matched_careers ?? '—', link: '/wizard/marche' },
-    { label: 'Profil complété', value: profile?.profile_completed ? 'Oui' : 'Non', link: '/wizard/profil' },
+  const quickActions = [
+    'Finaliser votre profil académique',
+    'Passer le test F-QI',
+    'Lancer l’analyse de métier',
   ];
 
   return (
-    <div>
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-          Bonjour, {user?.name} 👋
-        </h1>
-        <p className="text-gray-500 dark:text-gray-400 mt-1">
-          {isPremium ? 'Compte Premium · Merci de votre confiance' : 'Compte Gratuit · Passez à Premium pour débloquer toutes les fonctionnalités'}
-        </p>
+    <div className="space-y-8">
+      <div className="rounded-4xl bg-white p-8 shadow-[0_25px_60px_-30px_rgba(15,23,42,0.15)] ring-1 ring-slate-200">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <p className="text-sm uppercase tracking-[0.3em] text-cyan-600">Bonjour, {user?.name || 'Alexandre'}</p>
+            <h1 className="mt-4 text-4xl font-semibold text-slate-950">Votre parcours académique est complet à 85%.</h1>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
+              Poursuivez vos évaluations pour affiner votre plan de carrière personnalisé et obtenir des recommandations IA précises.
+            </p>
+          </div>
+          <div className="rounded-3xl bg-cyan-50 px-5 py-4 text-sm text-cyan-700 ring-1 ring-cyan-100">
+            <p className="text-xs uppercase tracking-[0.24em] text-cyan-600">Phase</p>
+            <p className="mt-2 text-lg font-semibold text-slate-950">Phase 2 : Analyse</p>
+          </div>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        {stats.map((s) => (
-          <Link key={s.label} to={s.link}
-            className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow">
-            <p className="text-sm text-gray-500 dark:text-gray-400">{s.label}</p>
-            <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">{s.value}</p>
-          </Link>
+      <div className="grid gap-6 xl:grid-cols-[1.4fr_1fr]">
+        <div className="space-y-6">
+          <div className="rounded-4xl border border-amber-200/70 bg-amber-50/80 p-6 shadow-sm ring-1 ring-amber-200">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+              <div>
+                <p className="text-sm uppercase tracking-[0.24em] text-amber-700">Alerte de faisabilité</p>
+                <h2 className="mt-3 text-2xl font-semibold text-slate-950">FT-05</h2>
+              </div>
+                <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-amber-700">
+                Budget critique
+              </span>
+            </div>
+            <p className="mt-4 text-sm leading-6 text-slate-700">
+              Votre budget est inférieur au coût moyen des études visées pour le parcours « Ingénieur IA ». Envisagez des alternatives de financement ou ajustez vos critères.
+            </p>
+          </div>
+
+          <div className="rounded-4xl border border-slate-200 bg-white p-6 shadow-sm ring-1 ring-slate-200">
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <div>
+                <p className="text-sm uppercase tracking-[0.24em] text-cyan-600">Compatibilité Projet Professionnel</p>
+                <h3 className="mt-3 text-3xl font-semibold text-slate-950">{compatibility}%</h3>
+                <p className="mt-2 text-sm text-slate-500">Métier cible : {careerTarget}</p>
+              </div>
+              <span className="rounded-full bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-700 ring-1 ring-slate-200">
+                NLP vérifié
+              </span>
+            </div>
+
+            <div className="mt-6 space-y-4">
+              <div>
+                <div className="flex items-center justify-between text-sm text-slate-600">
+                  <span>Compétences Techniques</span>
+                  <span>92%</span>
+                </div>
+                <div className="mt-2 h-2 rounded-full bg-slate-100">
+                  <div className="h-2 rounded-full bg-linear-to-r from-cyan-500 to-sky-500" style={{ width: '92%' }} />
+                </div>
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between text-sm text-slate-600">
+                  <span>Soft Skills</span>
+                  <span>80%</span>
+                </div>
+                <div className="mt-2 h-2 rounded-full bg-slate-100">
+                  <div className="h-2 rounded-full bg-linear-to-r from-indigo-600 to-cyan-500" style={{ width: '80%' }} />
+                </div>
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between text-sm text-slate-600">
+                  <span>Adéquation financière</span>
+                  <span>{financialFit}%</span>
+                </div>
+                <div className="mt-2 h-2 rounded-full bg-slate-100">
+                  <div className="h-2 rounded-full bg-amber-500" style={{ width: `${financialFit}%` }} />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <aside className="space-y-6">
+          <div className="rounded-4xl border border-slate-200 bg-white p-6 shadow-sm ring-1 ring-slate-200">
+            <p className="text-sm uppercase tracking-[0.24em] text-cyan-600">Test F-QI</p>
+            <div className="mt-4 rounded-3xl border border-slate-200 bg-slate-50 p-6 text-center">
+              <p className="text-sm text-slate-500">Supérieur</p>
+              <p className="mt-4 text-5xl font-semibold text-slate-950">{readiness}</p>
+              <p className="mt-2 text-sm text-slate-500">Score global</p>
+            </div>
+            <Link
+              to="/wizard/aptitudes"
+              className="mt-6 inline-flex w-full items-center justify-center rounded-full bg-cyan-600 px-4 py-3 text-sm font-semibold text-white hover:bg-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-200">
+              Voir les résultats détaillés
+            </Link>
+          </div>
+
+          <div className="rounded-4xl border border-slate-200 bg-white p-6 shadow-sm ring-1 ring-slate-200">
+            <div className="flex items-center justify-between">
+              <p className="text-sm uppercase tracking-[0.24em] text-cyan-600">Profil académique</p>
+              <span className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Complet</span>
+            </div>
+            <div className="mt-5 grid gap-4">
+              <div className="rounded-3xl bg-slate-50 p-4">
+                <p className="text-sm text-slate-500">Soft Skills</p>
+                <p className="mt-2 text-xl font-semibold text-slate-950">10/10</p>
+              </div>
+              <div className="rounded-3xl bg-slate-50 p-4">
+                <p className="text-sm text-slate-500">Rapport de synthèse</p>
+                <p className="mt-2 text-xl font-semibold text-slate-950">Téléchargement prêt</p>
+              </div>
+            </div>
+            <button
+              type="button"
+              className="mt-6 inline-flex w-full items-center justify-center rounded-full bg-cyan-600 px-4 py-3 text-sm font-semibold text-white hover:bg-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-200">
+              Télécharger (PDF)
+            </button>
+          </div>
+        </aside>
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-3">
+        {quickActions.map((action) => (
+          <div key={action} className="rounded-4xl border border-slate-200 bg-white p-6 shadow-sm ring-1 ring-slate-200 hover:shadow-md hover:ring-1 hover:ring-cyan-100 transition">
+            <p className="text-sm font-semibold text-slate-950">{action}</p>
+          </div>
         ))}
       </div>
-
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-8">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Mon parcours</h2>
-        <div className="space-y-3">
-          {WIZARD_STEPS.map((step, i) => (
-            <Link key={step.step} to={step.route}
-              className="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-              <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center text-sm font-medium text-indigo-600 dark:text-indigo-400">
-                {step.step}
-              </div>
-              <div>
-                <p className="font-medium text-gray-900 dark:text-white">{step.label}</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {i === 0 ? 'À compléter' : i < WIZARD_STEPS.length ? 'Optionnel' : 'Complété'}
-                </p>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </div>
-
-      {!isPremium && (
-        <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl p-6 text-white">
-          <h2 className="text-lg font-semibold mb-2">Passez à Premium</h2>
-          <p className="text-sm opacity-90 mb-4">
-            Générez des roadmaps personnalisées, accédez au Conseiller IA, téléchargez des rapports complets et plus encore.
-          </p>
-          <Link to="/pricing"
-            className="inline-block bg-white text-indigo-600 px-6 py-2 rounded-lg font-medium text-sm hover:bg-gray-100 transition-colors">
-            Voir les offres
-          </Link>
-        </div>
-      )}
     </div>
   );
 }

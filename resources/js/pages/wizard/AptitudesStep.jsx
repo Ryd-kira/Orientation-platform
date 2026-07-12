@@ -1,58 +1,254 @@
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import client from '../../api/client';
 import { useWizardProgress } from '../../hooks/useWizardProgress';
 import WizardContainer from '../../components/wizard/WizardContainer';
 
+const SUBSECTION_LABELS = {
+  logical_matrix: 'Matrices logiques',
+  numerical_series: 'Séries numériques',
+  verbal_analogies: 'Analogies verbales',
+  spatial_rotation: 'Rotation spatiale',
+};
+
 export default function AptitudesStep() {
   const navigate = useNavigate();
-  const { completeStep } = useWizardProgress();
+  const { completeStep, stepData } = useWizardProgress();
+  const [currentTest, setCurrentTest] = useState(null);
+  const [selectedAnswers, setSelectedAnswers] = useState({});
 
-  const { data: latestTest, isLoading } = useQuery({
+  const { data: latestTest, isLoading: loadingLatest, isError: latestError, refetch: refetchLatest } = useQuery({
     queryKey: ['qi-test', 'latest'],
-    queryFn: () => client.get('/qi-tests/latest').then(r => r.data),
+    queryFn: () => client.get('/qi-tests/latest').then((r) => r.data),
     retry: false,
   });
 
+  useEffect(() => {
+    if (latestTest) {
+      setCurrentTest(latestTest);
+    }
+  }, [latestTest]);
+
+  useEffect(() => {
+    if (latestTest?.status === 'completed') {
+      completeStep(6, latestTest);
+    }
+  }, [latestTest, completeStep]);
+
   const startMutation = useMutation({
-    mutationFn: () => client.post('/qi-tests/start').then(r => r.data),
+    mutationFn: () => client.post('/qi-tests/start').then((r) => r.data),
     onSuccess: (data) => {
-      completeStep(6, data);
-      navigate('/wizard/marche');
+      setCurrentTest(data);
+      setSelectedAnswers({});
     },
   });
 
-  if (latestTest?.status === 'completed') {
-    completeStep(6, latestTest);
+  const pendingSubsection = currentTest?.subsections?.find((sub) => sub.status !== 'completed');
+
+  const { data: questions = [], isLoading: loadingQuestions } = useQuery({
+    queryKey: ['qi-test', currentTest?.id, 'subsection', pendingSubsection?.id, 'questions'],
+    queryFn: () => client.get(`/qi-tests/${currentTest.id}/subsection/${pendingSubsection.id}/questions`).then((r) => r.data),
+    enabled: Boolean(currentTest?.id && pendingSubsection),
+    retry: false,
+  });
+
+  const submitMutation = useMutation({
+    mutationFn: ({ testId, subsectionId, answers }) => client
+      .post(`/qi-tests/${testId}/subsection/${subsectionId}/answers`, { answers, time_spent_seconds: 90 })
+      .then((r) => r.data),
+    onSuccess: async () => {
+      setSelectedAnswers({});
+      await refetchLatest();
+    },
+  });
+
+  const handleSelectOption = (questionId, option) => {
+    setSelectedAnswers((prev) => ({ ...prev, [questionId]: option }));
+  };
+
+  const allAnswered = questions.length > 0 && questions.every((question) => selectedAnswers[question.id]);
+
+  const handleSubmitAnswers = () => {
+    if (!pendingSubsection || !currentTest) return;
+    const answers = questions.map((question) => ({
+      question_id: question.id,
+      selected_answer: selectedAnswers[question.id],
+      time_spent_seconds: 60,
+    }));
+    submitMutation.mutate({
+      testId: currentTest.id,
+      subsectionId: pendingSubsection.id,
+      answers,
+    });
+  };
+
+  const handleSkip = () => {
+    completeStep(6, { skipped: true });
+    navigate('/wizard/marche');
+  };
+
+  const renderSummary = () => {
+    const score = currentTest.iq_score ?? currentTest.total_score ?? 'N/A';
     return (
-      <WizardContainer>
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-          <p className="text-green-600 font-medium">Test de QI déjà complété. Score : {latestTest.iq_score}</p>
-          <button onClick={() => navigate('/wizard/marche')}
-            className="mt-4 px-6 py-2 bg-indigo-600 text-white rounded-lg">
-            Suivant →
+      <div className="rounded-4xl bg-slate-50 p-8 ring-1 ring-slate-200 shadow-sm">
+        <p className="text-emerald-600 font-medium">Test de QI terminé</p>
+        <h2 className="mt-4 text-2xl font-semibold text-slate-950">Score final : {score}</h2>
+        <p className="mt-3 text-sm leading-6 text-slate-600">
+          Votre test est complet. Vous pouvez maintenant passer à l’analyse du marché et découvrir les métiers les plus adaptés.
+        </p>
+        <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:justify-end">
+          <button
+            type="button"
+            onClick={() => navigate('/dashboard')}
+            className="rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-900 hover:bg-slate-50"
+          >
+            Voir le dashboard
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              completeStep(6, currentTest);
+              navigate('/wizard/marche');
+            }}
+            className="rounded-full bg-cyan-600 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-cyan-500"
+          >
+            Continuer →
           </button>
         </div>
-      </WizardContainer>
+      </div>
     );
-  }
+  };
+
+  const renderTestIntro = () => (
+    <div className="rounded-4xl bg-white p-8 shadow-[0_25px_70px_-40px_rgba(15,23,42,0.08)] ring-1 ring-slate-200 space-y-6">
+      <div className="space-y-4">
+        <p className="text-sm text-slate-600">
+          Test d'aptitudes (QI) — 4 sous-sections : matrices logiques, séries numériques, analogies verbales et rotation spatiale.
+        </p>
+        <div className="rounded-3xl bg-slate-50 p-5 ring-1 ring-slate-200">
+          <p className="text-sm font-semibold text-slate-900">Préparez-vous à un test rapide et précis.</p>
+          <p className="mt-2 text-sm text-slate-500">Le résultat permettra d’affiner votre profil et la roadmap proposée.</p>
+        </div>
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="rounded-3xl bg-slate-50 p-5 ring-1 ring-slate-200">
+          <p className="text-sm font-semibold text-slate-900">Étapes</p>
+          <ul className="mt-4 space-y-2 text-sm text-slate-600">
+            <li>• Matrices logiques</li>
+            <li>• Séries numériques</li>
+            <li>• Analogies verbales</li>
+            <li>• Rotation spatiale</li>
+          </ul>
+        </div>
+        <div className="rounded-3xl bg-cyan-50 p-5 ring-1 ring-cyan-100">
+          <p className="text-sm uppercase tracking-[0.24em] text-cyan-600">Durée estimée</p>
+          <p className="mt-4 text-3xl font-semibold text-slate-950">10 min</p>
+          <p className="mt-2 text-sm text-slate-600">Répondez aux questions à votre rythme, puis passez à l’étape suivante.</p>
+        </div>
+      </div>
+      <div className="flex flex-col gap-4 sm:flex-row sm:justify-between">
+        <button
+          type="button"
+          onClick={handleSkip}
+          className="rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-900 hover:bg-slate-50"
+        >
+          Passer cette étape
+        </button>
+        <button
+          type="button"
+          onClick={() => startMutation.mutate()}
+          disabled={startMutation.isPending}
+          className="rounded-full bg-cyan-600 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-cyan-500 disabled:opacity-50"
+        >
+          {startMutation.isPending ? 'Démarrage...' : 'Démarrer le test'}
+        </button>
+      </div>
+      {startMutation.isError && (
+        <div className="rounded-3xl bg-red-50 border border-red-200 p-4 text-sm text-red-700">
+          {startMutation.error?.response?.data?.message || 'Impossible de démarrer le test.'}
+        </div>
+      )}
+    </div>
+  );
+
+  const renderSubsection = () => {
+    if (loadingQuestions) {
+      return (
+        <div className="rounded-4xl bg-white p-8 shadow-[0_25px_70px_-40px_rgba(15,23,42,0.08)] ring-1 ring-slate-200 text-center">
+          <p className="text-sm text-slate-600">Chargement des questions...</p>
+        </div>
+      );
+    }
+
+    if (!pendingSubsection || questions.length === 0) {
+      return (
+        <div className="rounded-4xl bg-slate-50 p-8 ring-1 ring-slate-200 text-center">
+          <p className="text-sm text-slate-600">Aucune sous-section disponible pour le moment.</p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-6 rounded-4xl bg-white p-8 shadow-[0_25px_70px_-40px_rgba(15,23,42,0.08)] ring-1 ring-slate-200">
+        <div className="space-y-3">
+          <p className="text-sm uppercase tracking-[0.24em] text-cyan-600">Sous-section</p>
+          <h2 className="text-3xl font-semibold text-slate-950">{SUBSECTION_LABELS[pendingSubsection.type] || 'Test d’aptitudes'}</h2>
+          <p className="text-sm text-slate-600">Répondez à toutes les questions pour cette sous-section avant de passer à la suivante.</p>
+          <p className="text-sm text-slate-500">Questions restantes : {questions.length}</p>
+        </div>
+
+        <div className="space-y-5">
+          {questions.map((question, index) => (
+            <div key={question.id} className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
+              <p className="font-semibold text-slate-900">Question {index + 1}</p>
+              <p className="mt-3 text-sm leading-6 text-slate-700">{question.question_text}</p>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                {question.options.map((option) => (
+                  <button
+                    key={option}
+                    type="button"
+                    onClick={() => handleSelectOption(question.id, option)}
+                    className={`rounded-3xl border px-4 py-3 text-left text-sm transition ${selectedAnswers[question.id] === option ? 'border-cyan-600 bg-cyan-50 text-slate-900' : 'border-slate-200 bg-white text-slate-700 hover:border-cyan-500 hover:bg-slate-50'}`}
+                  >
+                    {option}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="flex flex-col gap-4 sm:flex-row sm:justify-between">
+          <button
+            type="button"
+            onClick={handleSkip}
+            className="rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-900 hover:bg-slate-50"
+          >
+            Passer le test
+          </button>
+          <button
+            type="button"
+            onClick={handleSubmitAnswers}
+            disabled={!allAnswered || submitMutation.isPending}
+            className="rounded-full bg-cyan-600 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-cyan-500 disabled:opacity-50"
+          >
+            {submitMutation.isPending ? 'Envoi...' : 'Valider cette sous-section'}
+          </button>
+        </div>
+
+        {submitMutation.isError && (
+          <div className="rounded-3xl bg-red-50 border border-red-200 p-4 text-sm text-red-700">
+            {submitMutation.error?.response?.data?.message || 'Erreur lors de l’envoi des réponses.'}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return (
     <WizardContainer>
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 space-y-4">
-        <p className="text-sm text-gray-500 dark:text-gray-400">
-          Test d'aptitudes (QI) — 4 sous-sections : matrices logiques, séries numériques, analogies verbales, rotation spatiale.
-        </p>
-        <button onClick={() => startMutation.mutate()} disabled={startMutation.isPending}
-          className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 font-medium">
-          {startMutation.isPending ? 'Démarrage...' : 'Démarrer le test'}
-        </button>
-        <button onClick={() => { completeStep(6, { skipped: true }); navigate('/wizard/marche'); }}
-          className="text-sm text-gray-400 hover:text-gray-600">
-          Passer cette étape
-        </button>
-      </div>
+      {currentTest?.status === 'completed' ? renderSummary() : currentTest ? renderSubsection() : renderTestIntro()}
     </WizardContainer>
   );
 }

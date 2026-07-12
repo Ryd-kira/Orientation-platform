@@ -33,45 +33,47 @@ export default function DreamJobStep() {
 
   return (
     <WizardContainer>
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 space-y-4">
-        <p className="text-sm text-gray-500 dark:text-gray-400">
-          Décris le métier de tes rêves. Notre IA l'analysera pour évaluer sa compatibilité avec ton profil.
-        </p>
+      <div className="rounded-4xl bg-white p-8 shadow-[0_25px_70px_-40px_rgba(15,23,42,0.08)] ring-1 ring-slate-200 space-y-6">
+        <div className="space-y-3">
+          <p className="text-sm text-slate-600">
+            Décris le métier de tes rêves. Notre IA l'analysera pour évaluer sa compatibilité avec ton profil.
+          </p>
+          <div className="rounded-3xl bg-slate-50 p-5 ring-1 ring-slate-200">
+            <p className="text-sm font-semibold text-slate-900">Rêve de carrière</p>
+            <p className="mt-2 text-sm text-slate-500">Plus vous détaillez, plus l’analyse sera pertinente.</p>
+          </div>
+        </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Métier rêvé</label>
+            <label className="block text-sm font-medium text-slate-600 mb-2">Métier rêvé</label>
             <input type="text" {...register('job_title')} placeholder="Ex: Développeur Web"
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white" />
-            {errors.job_title && <p className="text-red-500 text-xs mt-1">{errors.job_title.message}</p>}
+              className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100" />
+            {errors.job_title && <p className="mt-2 text-xs text-red-600">{errors.job_title.message}</p>}
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description (pourquoi ce métier ?)</label>
+            <label className="block text-sm font-medium text-slate-600 mb-2">Description (pourquoi ce métier ?)</label>
             <textarea {...register('job_description')} rows={4} placeholder="Explique ce qui t'attire dans ce métier..."
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white" />
+              className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100" />
           </div>
           <button type="submit" disabled={mutation.isPending}
-            className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 font-medium">
+            className="rounded-full bg-cyan-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-cyan-500 disabled:opacity-50">
             {mutation.isPending ? 'Analyse...' : 'Analyser'}
           </button>
         </form>
 
         {mutation.isError && (
-          <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm">
+          <div className="rounded-3xl bg-red-50 border border-red-200 p-4 text-sm text-red-700">
             {mutation.error?.response?.data?.message || "Erreur d'analyse"}
           </div>
         )}
 
         {result && (
-          <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
-            <p className="font-medium text-green-800 dark:text-green-300">
-              Score de compatibilité : {result.compatibility_score}%
-            </p>
-            <p className="text-sm text-green-700 dark:text-green-400 mt-1">
-              {result.nlp_analysis?.summary || 'Analyse terminée.'}
-            </p>
+          <div className="rounded-3xl bg-slate-50 p-5 ring-1 ring-slate-200">
+            <p className="font-semibold text-slate-900">Score de compatibilité : {result.compatibility_score}%</p>
+            <p className="mt-2 text-sm text-slate-600">{result.nlp_analysis?.summary || 'Analyse terminée.'}</p>
             <button onClick={handleNext}
-              className="mt-4 px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium">
+              className="mt-4 rounded-full bg-cyan-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-cyan-500">
               Suivant →
             </button>
           </div>

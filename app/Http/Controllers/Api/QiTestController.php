@@ -41,6 +41,24 @@ class QiTestController extends Controller
         return response()->json($test->load('subsections'), 201);
     }
 
+    public function questions(Request $request, QiTest $test, QiSubsection $subsection): JsonResponse
+    {
+        if ($test->user_id !== $request->user()->id) {
+            return response()->json(['message' => 'Non autorisé.'], 403);
+        }
+
+        if ($subsection->qi_test_id !== $test->id) {
+            return response()->json(['message' => 'Sous-section invalide.'], 400);
+        }
+
+        $questions = QiQuestion::where('subsection_type', $subsection->type)
+            ->inRandomOrder()
+            ->limit(5)
+            ->get(['id', 'question_text', 'options']);
+
+        return response()->json($questions);
+    }
+
     public function submitSubsection(Request $request, QiTest $test, QiSubsection $subsection): JsonResponse
     {
         if ($test->user_id !== $request->user()->id) {

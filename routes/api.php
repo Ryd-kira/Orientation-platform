@@ -12,10 +12,12 @@ use App\Http\Controllers\Api\SubscriptionController;
 use App\Http\Controllers\Api\CareerController;
 use App\Http\Controllers\Api\AssistantController;
 
-Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login']);
+Route::middleware(['web'])->group(function () {
+    Route::post('/register', [AuthController::class, 'register']);
+    Route::post('/login', [AuthController::class, 'login']);
+});
 
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware(['web', 'auth:sanctum'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
 
@@ -33,6 +35,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::prefix('qi-tests')->group(function () {
         Route::post('/start', [QiTestController::class, 'start']);
+        Route::get('/{test}/subsection/{subsection}/questions', [QiTestController::class, 'questions']);
         Route::post('/{test}/subsection/{subsection}/answers', [QiTestController::class, 'submitSubsection']);
         Route::get('/{test}/results', [QiTestController::class, 'results']);
         Route::get('/latest', [QiTestController::class, 'latest']);

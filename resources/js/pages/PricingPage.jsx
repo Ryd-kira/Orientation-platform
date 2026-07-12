@@ -2,7 +2,6 @@ import { useMutation } from '@tanstack/react-query';
 import { useAuth } from '../contexts/AuthContext';
 import client from '../api/client';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useEffect } from 'react';
 
 const PLANS = [
   {
@@ -49,7 +48,7 @@ export default function PricingPage() {
       client.post('/subscriptions/checkout', {
         price_id: priceId,
         duration_months: durationMonths,
-      }).then(r => r.data),
+      }).then((r) => r.data),
     onSuccess: (data) => {
       window.location.href = data.url;
     },
@@ -67,67 +66,67 @@ export default function PricingPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto py-12">
-      {canceled && (
-        <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-6 text-sm text-yellow-700 dark:text-yellow-300">
-          Paiement annulé. Aucun montant n'a été débité.
-        </div>
-      )}
-
-      <div className="text-center mb-12">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-          Choisissez votre formule
-        </h1>
-        <p className="text-gray-500 dark:text-gray-400">
-          Accédez à des outils d'orientation personnalisés pour construire votre avenir.
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-2xl mx-auto">
-        {PLANS.map((plan) => (
-          <div key={plan.name} className={`rounded-xl p-6 border-2 ${
-            plan.popular
-              ? 'border-indigo-500 bg-white dark:bg-gray-800 shadow-lg'
-              : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'
-          }`}>
-            {plan.popular && (
-              <span className="inline-block px-3 py-1 bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-400 text-xs font-medium rounded-full mb-4">
-                Populaire
-              </span>
-            )}
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white">{plan.name}</h2>
-            <p className="mt-2">
-              <span className="text-3xl font-bold text-gray-900 dark:text-white">{plan.price}</span>
-              <span className="text-gray-500 dark:text-gray-400">{plan.period}</span>
-            </p>
-            <ul className="mt-6 space-y-3">
-              {plan.features.map((f) => (
-                <li key={f} className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
-                  <svg className="w-4 h-4 text-green-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  {f}
-                </li>
-              ))}
-            </ul>
-            <button
-              onClick={() => plan.popular ? handleSubscribe(plan) : navigate('/register')}
-              disabled={checkoutMutation.isPending}
-              className={`mt-8 w-full py-2 rounded-lg font-medium text-sm ${
-                plan.popular
-                  ? 'bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50'
-                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-              }`}>
-              {checkoutMutation.isPending ? 'Redirection vers Stripe...' : plan.cta}
-            </button>
+    <div className="min-h-screen bg-slate-50 px-4 py-12">
+      <div className="mx-auto max-w-5xl space-y-8">
+        {canceled && (
+          <div className="rounded-3xl bg-amber-50 p-4 ring-1 ring-amber-200 text-sm text-amber-700">
+            Paiement annulé. Aucun montant n'a été débité.
           </div>
-        ))}
-      </div>
+        )}
 
-      <div className="mt-12 text-center">
-        <p className="text-sm text-gray-400">
-          Paiement sécurisé par Stripe. Vous pouvez annuler à tout moment depuis votre profil.
-        </p>
+        <div className="text-center">
+          <p className="text-sm uppercase tracking-[0.3em] text-cyan-600">Offres</p>
+          <h1 className="mt-4 text-4xl font-semibold text-slate-950">Choisissez la formule qui accélère votre carrière</h1>
+          <p className="mt-4 text-sm leading-6 text-slate-600">
+            Accédez à des outils d’orientation personnalisés pour construire votre avenir avec l’IA.
+          </p>
+        </div>
+
+        <div className="grid gap-8 md:grid-cols-2">
+          {PLANS.map((plan) => (
+            <div
+              key={plan.name}
+              className={`rounded-4xl p-8 ring-1 ${
+                plan.popular ? 'bg-white ring-cyan-200 shadow-[0_20px_50px_-30px_rgba(14,165,233,0.25)]' : 'bg-white ring-slate-200'
+              }`}
+            >
+              {plan.popular && (
+                <span className="inline-flex rounded-full bg-cyan-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.25em] text-cyan-700">
+                  Populaire
+                </span>
+              )}
+              <h2 className="mt-6 text-2xl font-bold text-slate-950">{plan.name}</h2>
+              <p className="mt-4 text-4xl font-semibold text-slate-950">
+                {plan.price} <span className="text-lg font-medium text-slate-500">{plan.period}</span>
+              </p>
+              <ul className="mt-8 space-y-3">
+                {plan.features.map((f) => (
+                  <li key={f} className="flex items-start gap-3 text-sm text-slate-600">
+                    <span className="mt-1 inline-flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">✓</span>
+                    <span>{f}</span>
+                  </li>
+                ))}
+              </ul>
+              <button
+                onClick={() => plan.popular ? handleSubscribe(plan) : navigate('/register')}
+                disabled={checkoutMutation.isPending}
+                className={`mt-10 w-full rounded-full px-6 py-3 text-sm font-semibold transition ${
+                  plan.popular
+                    ? 'bg-cyan-600 text-white hover:bg-cyan-500 disabled:opacity-50'
+                    : 'bg-slate-100 text-slate-900 hover:bg-slate-200 disabled:opacity-50'
+                }`}
+              >
+                {checkoutMutation.isPending ? 'Redirection vers Stripe...' : plan.cta}
+              </button>
+            </div>
+          ))}
+        </div>
+
+        <div className="rounded-4xl bg-white p-6 ring-1 ring-slate-200 text-center">
+          <p className="text-sm text-slate-600">
+            Paiement sécurisé par Stripe. Vous pouvez annuler à tout moment depuis votre profil.
+          </p>
+        </div>
       </div>
     </div>
   );

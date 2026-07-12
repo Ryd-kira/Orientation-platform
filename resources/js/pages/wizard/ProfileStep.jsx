@@ -41,17 +41,17 @@ export default function ProfileStep() {
 
   return (
     <WizardContainer>
-      <form onSubmit={handleSubmit(onSubmit)} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <form onSubmit={handleSubmit(onSubmit)} className="rounded-4xl bg-white p-8 shadow-[0_25px_70px_-40px_rgba(15,23,42,0.08)] ring-1 ring-slate-200 space-y-6">
+        <div className="grid gap-4 md:grid-cols-2">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Âge</label>
+            <label className="block text-sm font-medium text-slate-600 mb-2">Âge</label>
             <input type="number" {...register('age', { valueAsNumber: true })}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white" />
-            {errors.age && <p className="text-red-500 text-xs mt-1">{errors.age.message}</p>}
+              className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100" />
+            {errors.age && <p className="mt-2 text-xs text-red-600">{errors.age.message}</p>}
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Genre</label>
-            <select {...register('gender')} className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white">
+            <label className="block text-sm font-medium text-slate-600 mb-2">Genre</label>
+            <select {...register('gender')} className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100">
               <option value="">Sélectionner</option>
               <option value="Homme">Homme</option>
               <option value="Femme">Femme</option>
@@ -59,54 +59,54 @@ export default function ProfileStep() {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Ville</label>
+            <label className="block text-sm font-medium text-slate-600 mb-2">Ville</label>
             <input type="text" {...register('city')}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white" />
+              className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Région</label>
+            <label className="block text-sm font-medium text-slate-600 mb-2">Région</label>
             <input type="text" {...register('region')}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white" />
+              className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Pays</label>
+            <label className="block text-sm font-medium text-slate-600 mb-2">Pays</label>
             <input type="text" {...register('country')}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white" />
+              className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Budget études (€)</label>
+            <label className="block text-sm font-medium text-slate-600 mb-2">Budget études (€)</label>
             <input type="number" {...register('budget', { valueAsNumber: true })}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white" />
+              className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100" />
           </div>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Métier cible</label>
+          <label className="block text-sm font-medium text-slate-600 mb-2">Métier cible</label>
           <input type="text" {...register('target_job_title')} placeholder="Ex: Développeur Web"
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white" />
+            className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100" />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description du métier visé</label>
+          <label className="block text-sm font-medium text-slate-600 mb-2">Description du métier visé</label>
           <textarea {...register('target_job_description')} rows={3}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white" />
+            className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100" />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Bio / Présentation</label>
+          <label className="block text-sm font-medium text-slate-600 mb-2">Bio / Présentation</label>
           <textarea {...register('bio')} rows={2}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white" />
+            className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100" />
         </div>
 
         {mutation.isError && (
-          <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm">
+          <div className="rounded-3xl bg-red-50 border border-red-200 p-4 text-sm text-red-700">
             {mutation.error?.response?.data?.message || "Erreur lors de l'enregistrement"}
           </div>
         )}
 
         <div className="flex justify-end">
           <button type="submit" disabled={isSubmitting || mutation.isPending}
-            className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 font-medium">
+            className="rounded-full bg-cyan-600 px-7 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-cyan-500 disabled:opacity-50">
             {mutation.isPending ? 'Enregistrement...' : 'Suivant →'}
           </button>
         </div>

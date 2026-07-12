@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './contexts/AuthContext';
 import { ProtectedRoute, GuestRoute } from './components/layout/ProtectedRoute';
@@ -12,12 +12,19 @@ import ProfilePage from './pages/ProfilePage';
 import AssistantPage from './pages/AssistantPage';
 import PricingPage from './pages/PricingPage';
 import PaymentSuccessPage from './pages/PaymentSuccessPage';
+import BillingPage from './pages/BillingPage';
+import PaywallPage from './pages/PaywallPage';
+import CareerRoadmapPage from './pages/CareerRoadmapPage';
+import LearningLabPage from './pages/LearningLabPage';
+import NotFoundPage from './pages/NotFoundPage';
 
 import ProfileStep from './pages/wizard/ProfileStep';
 import AcademicStep from './pages/wizard/AcademicStep';
+import InterestsStep from './pages/wizard/InterestsStep';
 import DreamJobStep from './pages/wizard/DreamJobStep';
 import PersonalityStep from './pages/wizard/PersonalityStep';
 import AptitudesStep from './pages/wizard/AptitudesStep';
+import MarketStep from './pages/wizard/MarketStep';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -45,25 +52,21 @@ export default function OrientationApp() {
               <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/profil" element={<ProfilePage />} />
               <Route path="/assistant" element={<AssistantPage />} />
+              <Route path="/billing" element={<BillingPage />} />
+              <Route path="/paywall" element={<PaywallPage />} />
+              <Route path="/career-roadmap" element={<CareerRoadmapPage />} />
+              <Route path="/learning-lab" element={<LearningLabPage />} />
 
               <Route path="/wizard/profil" element={<ProfileStep />} />
               <Route path="/wizard/scolaire" element={<AcademicStep />} />
-              <Route path="/wizard/interets" element={<DreamJobStep />} />
+              <Route path="/wizard/interets" element={<InterestsStep />} />
               <Route path="/wizard/metier-reve" element={<DreamJobStep />} />
               <Route path="/wizard/personnalite" element={<PersonalityStep />} />
               <Route path="/wizard/aptitudes" element={<AptitudesStep />} />
-              <Route path="/wizard/marche" element={
-                <div className="text-center py-12">
-                  <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Marché et débouchés</h2>
-                  <p className="text-gray-500 mb-4">Analyse du marché du travail basée sur ton profil.</p>
-                  <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border p-6 max-w-lg mx-auto">
-                    <p className="text-sm text-gray-600 dark:text-gray-300">Après avoir complété les étapes précédentes, rends-toi sur le tableau de bord pour voir tes métiers matchés.</p>
-                  </div>
-                </div>
-              } />
+              <Route path="/wizard/marche" element={<MarketStep />} />
             </Route>
 
-            <Route path="*" element={<Navigate to="/" replace />} />
+            <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </AuthProvider>
       </BrowserRouter>
