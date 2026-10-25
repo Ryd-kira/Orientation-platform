@@ -85,12 +85,12 @@
 
     @if ($qiTest)
     <div class="section">
-        <h2>Test de QI</h2>
+        <h2>Questionnaire d’aptitudes</h2>
         <table>
-            <tr><td class="label">Score de QI</td><td class="value">{{ $qiTest->iq_score }}</td></tr>
-            <tr><td class="label">Centile</td><td class="value">{{ $qiTest->percentile }}%</td></tr>
+            <tr><td class="label">Score indicatif</td><td class="value">{{ $qiTest->iq_score }}</td></tr>
             <tr><td class="label">Statut</td><td class="value">{{ $qiTest->status }}</td></tr>
         </table>
+        <p>Ce questionnaire d’orientation n’est pas standardisé et ne constitue pas une mesure clinique du QI.</p>
         @if ($qiTest->subsections->isNotEmpty())
         <h3>Sous-sections</h3>
         <table>

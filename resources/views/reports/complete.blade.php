@@ -87,7 +87,7 @@
             <tr><td>Métier cible</td><td>{{ $profile->target_job_title ?? '-' }}</td></tr>
             @endif
             @if ($qiTest)
-            <tr><td>QI</td><td>{{ $qiTest->iq_score }} (centile {{ $qiTest->percentile }}%)</td></tr>
+            <tr><td>Score indicatif au questionnaire d’aptitudes</td><td>{{ $qiTest->iq_score }}</td></tr>
             @endif
             @if ($personalityTest)
             <tr><td>Personnalité</td><td>{{ $personalityTest->traitResults->count() }} traits mesurés, score moyen {{ $personalityTest->overall_score }}/100</td></tr>

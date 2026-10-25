@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Rapport de QI - Orientation IA</title>
+    <title>Questionnaire d’aptitudes - Orientation IA</title>
     <style>
         body { font-family: DejaVu Sans, sans-serif; font-size: 12px; line-height: 1.6; color: #333; padding: 40px; }
         h1 { color: #1a56db; font-size: 24px; border-bottom: 2px solid #1a56db; padding-bottom: 10px; }
@@ -18,15 +18,14 @@
 </head>
 <body>
     <div class="header" style="text-align: center;">
-        <h1>Rapport d'Évaluation Cognitive (QI)</h1>
+        <h1>Rapport du questionnaire d’aptitudes</h1>
         <div style="color: #6b7280;">Généré le {{ $generatedAt }} pour {{ $user->name }}</div>
     </div>
 
     @if ($qiTest)
     <div style="text-align: center; margin: 30px 0;">
         <div class="iq-score">{{ $qiTest->iq_score }}</div>
-        <div class="iq-label">Score de QI Global</div>
-        <div style="margin-top: 5px; color: #9ca3af;">Centile : {{ $qiTest->percentile }}%</div>
+        <div class="iq-label">Score indicatif</div>
     </div>
 
     <div class="section">
@@ -45,24 +44,11 @@
     </div>
 
     <div class="section">
-        <h2>Interprétation</h2>
-        <p>
-            @if ($qiTest->iq_score >= 130)
-                Votre score de QI est <strong>très supérieur</strong> à la moyenne. Vous possédez des capacités cognitives exceptionnelles.
-            @elseif ($qiTest->iq_score >= 115)
-                Votre score de QI est <strong>supérieur</strong> à la moyenne. Vous avez de très bonnes capacités d'analyse et de raisonnement.
-            @elseif ($qiTest->iq_score >= 100)
-                Votre score de QI est <strong>dans la moyenne haute</strong>. Vous êtes parfaitement outillé pour la plupart des filières d'excellence.
-            @elseif ($qiTest->iq_score >= 85)
-                Votre score de QI est <strong>dans la moyenne</strong>. Vous pouvez envisager sereinement des études supérieures.
-            @else
-                Votre score de QI est <strong>dans la moyenne basse</strong>. Un accompagnement personnalisé est recommandé.
-            @endif
-        </p>
-        <p><strong>Référence :</strong> Population générale : moyenne = 100, écart-type = 15.</p>
+        <h2>À propos de ce résultat</h2>
+        <p>Ce questionnaire d’orientation n’est pas un test psychométrique standardisé et ne constitue pas une mesure clinique du QI. Le score est une indication basée sur vos réponses, sans comparaison à une population de référence.</p>
     </div>
     @else
-    <p>Aucun test de QI complété.</p>
+    <p>Aucun questionnaire d’aptitudes complété.</p>
     @endif
 
     <div class="footer">

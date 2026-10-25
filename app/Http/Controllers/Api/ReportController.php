@@ -8,6 +8,7 @@ use App\Services\ReportService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\Response;
 
 class ReportController extends Controller
 {
@@ -27,11 +28,9 @@ class ReportController extends Controller
             return response()->json(['message' => 'Type de rapport invalide.'], 400);
         }
 
-        $isPremiumOnly = in_array($type, ['qi', 'complete']);
-
-        if ($isPremiumOnly && !$request->user()->isPremium()) {
+        if (!$request->user()->isPremium()) {
             return response()->json([
-                'message' => 'Passez à l\'offre Premium pour générer ce rapport.',
+                'message' => 'Passez à l\'offre Premium pour exporter vos rapports en PDF.',
                 'code' => 'PREMIUM_REQUIRED',
             ], 402);
         }
@@ -41,7 +40,7 @@ class ReportController extends Controller
         return response()->json($report, 201);
     }
 
-    public function download(Request $request, Report $report): JsonResponse
+    public function download(Request $request, Report $report): Response
     {
         if ($report->user_id !== $request->user()->id) {
             return response()->json(['message' => 'Non autorisé.'], 403);

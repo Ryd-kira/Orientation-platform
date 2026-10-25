@@ -9,9 +9,13 @@ use App\Models\QiSubsection;
 use App\Models\QiTest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class QiTestController extends Controller
 {
+    private const QUESTIONS_PER_SUBSECTION = 5;
+    private const TIME_LIMIT_SECONDS = 120;
+
     public function start(Request $request): JsonResponse
     {
         $existing = $request->user()->qiTests()
@@ -51,12 +55,34 @@ class QiTestController extends Controller
             return response()->json(['message' => 'Sous-section invalide.'], 400);
         }
 
-        $questions = QiQuestion::where('subsection_type', $subsection->type)
-            ->inRandomOrder()
-            ->limit(5)
-            ->get(['id', 'question_text', 'options']);
+        if ($test->status !== 'in_progress' || $subsection->status === 'completed') {
+            return response()->json(['message' => 'Cette sous-section est déjà terminée.'], 409);
+        }
 
-        return response()->json($questions);
+        if (!$subsection->question_ids) {
+            $questionIds = QiQuestion::where('subsection_type', $subsection->type)
+                ->inRandomOrder()
+                ->limit(self::QUESTIONS_PER_SUBSECTION)
+                ->pluck('id')
+                ->all();
+
+            if (empty($questionIds)) {
+                return response()->json(['message' => 'Aucune question disponible pour cette sous-section.'], 422);
+            }
+
+            $subsection->update([
+                'question_ids' => $questionIds,
+                'started_at' => now(),
+                'status' => 'in_progress',
+            ]);
+        }
+
+        return response()->json([
+            'questions' => QiQuestion::whereIn('id', $subsection->question_ids)
+                ->get(['id', 'question_text', 'options']),
+            'started_at' => $subsection->started_at,
+            'time_limit_seconds' => self::TIME_LIMIT_SECONDS,
+        ]);
     }
 
     public function submitSubsection(Request $request, QiTest $test, QiSubsection $subsection): JsonResponse
@@ -69,62 +95,92 @@ class QiTestController extends Controller
             return response()->json(['message' => 'Sous-section invalide.'], 400);
         }
 
+        if ($test->status !== 'in_progress' || $subsection->status !== 'in_progress' || !$subsection->started_at) {
+            return response()->json(['message' => 'Cette sous-section ne peut pas être soumise.'], 409);
+        }
+
         $validated = $request->validate([
-            'answers' => 'required|array|min:1',
-            'answers.*.question_id' => 'required|exists:qi_questions,id',
-            'answers.*.selected_answer' => 'required|string',
-            'answers.*.time_spent_seconds' => 'nullable|integer|min:0',
-            'time_spent_seconds' => 'nullable|integer|min:0',
+            'answers' => 'present|array',
+            'answers.*.question_id' => 'required|integer|distinct',
+            'answers.*.selected_answer' => 'required|string|max:255',
         ]);
 
-        $score = 0;
-        $maxScore = 0;
+        $questionIds = $subsection->question_ids ?? [];
+        $answerIds = array_column($validated['answers'], 'question_id');
+        if (array_diff($answerIds, $questionIds)) {
+            return response()->json(['message' => 'Une réponse ne correspond pas aux questions de cette sous-section.'], 422);
+        }
 
+        $questions = QiQuestion::whereIn('id', $questionIds)->get()->keyBy('id');
         foreach ($validated['answers'] as $answerData) {
-            $question = QiQuestion::findOrFail($answerData['question_id']);
-            $isCorrect = $answerData['selected_answer'] === $question->correct_answer;
-
-            QiAnswer::create([
-                'qi_test_id' => $test->id,
-                'qi_question_id' => $question->id,
-                'selected_answer' => $answerData['selected_answer'],
-                'is_correct' => $isCorrect,
-                'time_spent_seconds' => $answerData['time_spent_seconds'] ?? 0,
-            ]);
-
-            if ($isCorrect) {
-                $score += $question->points;
+            $question = $questions->get($answerData['question_id']);
+            if (!$question || !in_array($answerData['selected_answer'], $question->options, true)) {
+                return response()->json(['message' => 'Une réponse sélectionnée est invalide.'], 422);
             }
-            $maxScore += $question->points;
         }
 
-        $subsection->update([
-            'score' => $score,
-            'max_score' => $maxScore,
-            'time_spent_seconds' => $validated['time_spent_seconds'] ?? 0,
-            'status' => 'completed',
-        ]);
+        $elapsedSeconds = max(0, (int) $subsection->started_at->diffInSeconds(now()));
+        $expired = $elapsedSeconds >= self::TIME_LIMIT_SECONDS;
+        if (!$expired && count($answerIds) !== count($questionIds)) {
+            return response()->json(['message' => 'Répondez à toutes les questions avant de valider.'], 422);
+        }
 
-        $allCompleted = $test->subsections()->where('status', '!=', 'completed')->count() === 0;
+        $result = DB::transaction(function () use ($test, $subsection, $validated, $questions, $expired, $elapsedSeconds) {
+            $score = 0;
+            $maxScore = $questions->sum('points');
 
-        if ($allCompleted) {
-            $totalScore = $test->subsections()->sum('score');
-            $totalMaxScore = $test->subsections()->sum('max_score');
+            if (!$expired) {
+                foreach ($validated['answers'] as $answerData) {
+                    $question = $questions->get($answerData['question_id']);
+                    $isCorrect = $answerData['selected_answer'] === $question->correct_answer;
 
-            $percentage = $totalMaxScore > 0 ? ($totalScore / $totalMaxScore) * 100 : 0;
-            $iqScore = (int) round(($percentage / 100) * 60 + 70);
+                    QiAnswer::create([
+                        'qi_test_id' => $test->id,
+                        'qi_question_id' => $question->id,
+                        'selected_answer' => $answerData['selected_answer'],
+                        'is_correct' => $isCorrect,
+                        'time_spent_seconds' => min(self::TIME_LIMIT_SECONDS, $elapsedSeconds),
+                    ]);
 
-            $test->update([
+                    if ($isCorrect) {
+                        $score += $question->points;
+                    }
+                }
+            }
+
+            $subsection->update([
+                'score' => $score,
+                'max_score' => $maxScore,
+                'time_spent_seconds' => min(self::TIME_LIMIT_SECONDS, $elapsedSeconds),
                 'status' => 'completed',
-                'total_score' => $totalScore,
-                'iq_score' => $iqScore,
-                'standard_deviation' => 15.0,
-                'percentile' => round($this->calculatePercentile($iqScore), 2),
-                'completed_at' => now(),
             ]);
-        }
 
-        return response()->json($subsection->fresh());
+            $allCompleted = $test->subsections()->where('status', '!=', 'completed')->count() === 0;
+
+            if ($allCompleted) {
+                $totalScore = $test->subsections()->sum('score');
+                $totalMaxScore = $test->subsections()->sum('max_score');
+
+                $percentage = $totalMaxScore > 0 ? ($totalScore / $totalMaxScore) * 100 : 0;
+                $iqScore = (int) round(($percentage / 100) * 60 + 70);
+
+                $test->update([
+                    'status' => 'completed',
+                    'total_score' => $totalScore,
+                    'iq_score' => $iqScore,
+                    'standard_deviation' => null,
+                    'percentile' => null,
+                    'completed_at' => now(),
+                ]);
+            }
+
+            return $subsection->fresh();
+        });
+
+        return response()->json([
+            'subsection' => $result,
+            'timed_out' => $expired,
+        ]);
     }
 
     public function results(Request $request, QiTest $test): JsonResponse
@@ -150,20 +206,4 @@ class QiTestController extends Controller
         return response()->json($test);
     }
 
-    private function calculatePercentile(int $iqScore): float
-    {
-        $mean = 100;
-        $stdDev = 15;
-        $z = ($iqScore - $mean) / $stdDev;
-        return 0.5 * (1 + $this->erf($z / sqrt(2))) * 100;
-    }
-
-    private function erf(float $x): float
-    {
-        $sign = $x < 0 ? -1 : 1;
-        $x = abs($x);
-        $t = 1 / (1 + 0.3275911 * $x);
-        $y = 1 - ((((1.061405429 * $t - 1.453152027) * $t) + 1.421413741) * $t - 0.284496736) * $t * exp(-$x * $x);
-        return $sign * $y;
-    }
 }

@@ -13,7 +13,7 @@ const PLANS = [
       'Tests de personnalité',
       'Test de QI',
       'Matching métiers (top 15)',
-      'Rapport initial PDF',
+      'Consultation des résultats dans votre espace',
     ],
     cta: 'Commencer',
     popular: false,
@@ -68,6 +68,11 @@ export default function PricingPage() {
   return (
     <div className="min-h-screen bg-slate-50 px-4 py-12">
       <div className="mx-auto max-w-5xl space-y-8">
+        {checkoutMutation.isError && (
+          <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-900" role="alert">
+            {checkoutMutation.error?.response?.data?.message || 'Le paiement n’a pas pu être démarré. Vérifiez la configuration du paiement puis réessayez.'}
+          </div>
+        )}
         {canceled && (
           <div className="rounded-3xl bg-amber-50 p-4 ring-1 ring-amber-200 text-sm text-amber-700">
             Paiement annulé. Aucun montant n'a été débité.

@@ -38,8 +38,11 @@ class MatchingService
         $matches = $jobs->map(function ($job) use ($user, $profile, $excludedSubjects, $personalityTraits, $qiScore) {
             return $this->calculateMatch($job, $user, $profile, $excludedSubjects, $personalityTraits, $qiScore);
         })->filter(function ($match) {
-            return $match['score'] > 0;
-        })->sortByDesc('score')->values()->toArray();
+            return $match['score'] > 0 && !$match['excluded'];
+        })->sortByDesc('score')->map(function ($match) {
+            unset($match['excluded']);
+            return $match;
+        })->values()->toArray();
 
         return [
             'matches' => array_slice($matches, 0, 15),
@@ -60,13 +63,14 @@ class MatchingService
         $score = 0;
         $factors = [];
         $alerts = [];
+        $excluded = false;
 
         // Exclusion par matières détestées
         $jobSkills = $job->required_skills ?? [];
         foreach ($excludedSubjects as $subject) {
             foreach ($jobSkills as $skill) {
                 if (stripos($skill, $subject) !== false || stripos($subject, $skill) !== false) {
-                    $score -= 20;
+                    $excluded = true;
                     $factors[] = "Exclusion : \"$subject\" détecté dans les compétences requises";
                     $alerts[] = "Ce métier requiert \"$skill\" qui est lié à une matière que vous avez marquée comme détestée.";
                     break 2;
@@ -103,13 +107,13 @@ class MatchingService
         if ($qiScore !== null) {
             if ($qiScore >= 130) {
                 $score += 15;
-                $factors[] = 'QI élevé +15';
+                $factors[] = 'Score élevé au questionnaire d’aptitudes +15';
             } elseif ($qiScore >= 110) {
                 $score += 10;
-                $factors[] = 'QI moyen-supérieur +10';
+                $factors[] = 'Score moyen-supérieur au questionnaire d’aptitudes +10';
             } elseif ($qiScore >= 90) {
                 $score += 5;
-                $factors[] = 'QI dans la moyenne +5';
+                $factors[] = 'Score dans la moyenne au questionnaire d’aptitudes +5';
             }
         }
 
@@ -152,6 +156,7 @@ class MatchingService
             'job_title' => $job->job_title,
             'sector' => $job->sector,
             'score' => $score,
+            'excluded' => $excluded,
             'compatibility_label' => $this->getLabel($score),
             'factors' => $factors,
             'alerts' => $alerts,
@@ -171,7 +176,11 @@ class MatchingService
     {
         $profile = $user->profile;
         if (!$profile || !$profile->budget) {
-            return ['coherent' => true, 'message' => 'Aucun budget déclaré pour vérification.'];
+            return [
+                'results' => [],
+                'has_blocking_alert' => false,
+                'message' => 'Renseignez votre budget dans votre profil pour vérifier la faisabilité financière.',
+            ];
         }
 
         $query = MarketData::query();
@@ -183,9 +192,14 @@ class MatchingService
         }
 
         $jobs = $query->get();
-
         if ($jobs->isEmpty()) {
-            $jobs = MarketData::limit(5)->get();
+            return [
+                'results' => [],
+                'has_blocking_alert' => false,
+                'message' => $jobTitle
+                    ? "Aucune donnée de coût d'études disponible pour le métier « {$jobTitle} »."
+                    : 'Aucune donnée de coût d’études disponible pour vérifier ce profil.',
+            ];
         }
 
         $results = [];
@@ -193,11 +207,16 @@ class MatchingService
             $coherent = true;
             $message = 'Budget suffisant.';
 
-            if ($job->study_cost_max && $profile->budget < $job->study_cost_max) {
+            $averageCost = $job->study_cost_min !== null && $job->study_cost_max !== null
+                ? ($job->study_cost_min + $job->study_cost_max) / 2
+                : ($job->study_cost_min ?? $job->study_cost_max);
+
+            if ($averageCost === null) {
+                $message = 'Coût des études non renseigné.';
+            } elseif ($profile->budget < $averageCost) {
                 $coherent = false;
-                $message = 'Budget insuffisant (besoin: ' . $job->study_cost_max . '€, disponible: ' . $profile->budget . '€).';
-            } elseif ($job->study_cost_min && $profile->budget < $job->study_cost_min) {
-                $message = 'Budget limite (besoin min: ' . $job->study_cost_min . '€).';
+                $message = 'Alerte critique : budget de ' . number_format((float) $profile->budget, 0, ',', ' ')
+                    . ' € inférieur au coût moyen estimé des études (' . number_format((float) $averageCost, 0, ',', ' ') . ' €).';
             }
 
             $results[] = [
@@ -206,6 +225,7 @@ class MatchingService
                 'message' => $message,
                 'budget_user' => $profile->budget,
                 'study_cost_min' => $job->study_cost_min,
+                'study_cost_average' => $averageCost,
                 'study_cost_max' => $job->study_cost_max,
             ];
         }

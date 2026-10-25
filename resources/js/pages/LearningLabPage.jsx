@@ -1,111 +1,126 @@
+import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-
-const COURSES = [
-  {
-    title: 'Machine Learning for Professionals',
-    provider: 'Coursera',
-    duration: '8 semaines',
-    match: '98% match',
-    tags: ['Python', 'IA'],
-  },
-  {
-    title: 'Strategic Communication in Tech',
-    provider: 'edX',
-    duration: '4 semaines',
-    match: '92% match',
-    tags: ['Soft Skill'],
-  },
-  {
-    title: 'Agile Product Management',
-    provider: 'Udacity',
-    duration: '12 semaines',
-    match: '85% match',
-    tags: ['Agile', 'Scrum'],
-  },
-];
+import client from '../api/client';
 
 export default function LearningLabPage() {
+  const { data: profile } = useQuery({
+    queryKey: ['profile'],
+    queryFn: () => client.get('/profile').then((response) => response.data).catch((error) => {
+      if (error.response?.status === 404) return null;
+      throw error;
+    }),
+    retry: false,
+  });
+
+  const { data, isLoading, isError, error, refetch } = useQuery({
+    queryKey: ['assistant-courses'],
+    queryFn: () => client.get('/assistant/courses').then((response) => response.data),
+    retry: false,
+  });
+
+  const recommendations = data?.recommendations ?? [];
+  const isPremiumRequired = error?.response?.status === 402;
+
   return (
     <div className="space-y-8">
-      <section className="rounded-4xl bg-white p-8 shadow-[0_25px_70px_-40px_rgba(15,23,42,0.18)] ring-1 ring-slate-200">
+      <section className="overflow-hidden rounded-[1.75rem] bg-slate-950 p-7 text-white shadow-[0_24px_60px_-36px_rgba(2,6,23,0.6)] sm:p-10">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-sm uppercase tracking-[0.3em] text-cyan-600">Learning Lab</p>
-            <h1 className="mt-3 text-4xl font-semibold text-slate-950">Votre apprentissage personnalisé basé sur votre profil.</h1>
-            <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600">
-              Suivez un parcours de formation ajusté à vos objectifs IA, avec des recommandations claires pour progresser plus vite.
+            <p className="text-sm font-medium text-cyan-200">Learning Lab</p>
+            <h1 className="mt-3 max-w-3xl text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
+              {profile?.target_job_title
+                ? `Développez les compétences pour viser ${profile.target_job_title}.`
+                : 'Des pistes de formation liées à votre projet.'}
+            </h1>
+            <p className="mt-4 max-w-2xl text-sm leading-7 text-cyan-50 sm:text-base">
+              Les suggestions sont établies à partir des compétences associées à votre métier cible et de votre feuille de route.
             </p>
           </div>
-          <Link to="/career-roadmap" className="inline-flex rounded-full bg-cyan-600 px-5 py-3 text-sm font-semibold text-white hover:bg-cyan-500">
-            Voir la roadmap
+          <Link to="/career-roadmap" className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-full bg-white px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950">
+            Voir ma feuille de route
           </Link>
         </div>
       </section>
 
-      <div className="grid gap-6 xl:grid-cols-[1.3fr_0.7fr]">
-        <section className="rounded-4xl bg-white p-8 shadow-[0_25px_70px_-40px_rgba(15,23,42,0.18)] ring-1 ring-slate-200">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <p className="text-sm uppercase tracking-[0.3em] text-cyan-600">Compétences à acquérir</p>
-              <h2 className="mt-2 text-3xl font-semibold text-slate-950">Priorité haute</h2>
-            </div>
-            <span className="rounded-full bg-amber-100 px-4 py-2 text-sm font-semibold text-amber-700">En cours</span>
-          </div>
-
-          <div className="mt-8 space-y-5">
-            {['Machine Learning Intégré', 'Gestion de Projet Agile', 'Communication Stratégique'].map((item, index) => (
-              <div key={item} className="rounded-4xl bg-slate-50 p-5 ring-1 ring-slate-200">
-                <div className="flex items-center justify-between gap-4">
-                  <h3 className="text-base font-semibold text-slate-950">{item}</h3>
-                  <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-slate-600">Priorité</span>
-                </div>
-                <div className="mt-4 h-3 rounded-full bg-slate-200">
-                  <div className="h-3 rounded-full bg-linear-to-r from-indigo-600 to-cyan-500" style={{ width: `${80 - index * 15}%` }} />
-                </div>
-                <p className="mt-3 text-sm text-slate-600">Gardez votre attention sur ces compétences à fort impact pour votre évolution vers l’IA.</p>
-              </div>
-            ))}
-          </div>
+      {isLoading ? (
+        <p className="rounded-3xl bg-white p-6 text-sm text-slate-700 ring-1 ring-slate-200" role="status">Chargement des pistes de formation…</p>
+      ) : isPremiumRequired ? (
+        <section className="rounded-[1.5rem] bg-white p-7 ring-1 ring-slate-200 sm:p-9">
+          <h2 className="text-xl font-semibold text-slate-950">Le Learning Lab est réservé à Premium</h2>
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-700">
+            Passez à Premium pour consulter les suggestions de formation reliées aux compétences de votre projet.
+          </p>
+          <Link to="/pricing" className="mt-6 inline-flex min-h-11 items-center justify-center rounded-full bg-cyan-800 px-6 py-3 text-sm font-semibold text-white hover:bg-cyan-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700 focus-visible:ring-offset-2">
+            Découvrir les offres
+          </Link>
         </section>
-
-        <aside className="space-y-6">
-          <div className="rounded-4xl bg-white p-6 shadow-[0_25px_70px_-40px_rgba(15,23,42,0.18)] ring-1 ring-slate-200">
-            <p className="text-sm uppercase tracking-[0.24em] text-cyan-600">Trajectoire d’expertise</p>
-            <div className="mt-5 grid gap-4">
-              {['Profil actuel', 'Objectif IA'].map((label) => (
-                <div key={label} className="rounded-3xl bg-slate-50 p-4 ring-1 ring-slate-200">
-                  <p className="text-sm font-medium text-slate-500">{label}</p>
-                  <p className="mt-3 text-base font-semibold text-slate-950">
-                    {label === 'Profil actuel' ? 'Data Scientist Junior' : 'Lead AI Architect'}
-                  </p>
-                </div>
-              ))}
+      ) : isError ? (
+        <section className="rounded-3xl border border-red-200 bg-red-50 p-6" role="alert">
+          <p className="text-sm font-medium text-red-900">Les recommandations n’ont pas pu être chargées.</p>
+          <button type="button" onClick={() => refetch()} className="mt-3 rounded font-semibold text-red-900 underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700">
+            Réessayer
+          </button>
+        </section>
+      ) : recommendations.length === 0 ? (
+        <section className="rounded-[1.5rem] bg-white p-7 ring-1 ring-slate-200 sm:p-9">
+          <h2 className="text-xl font-semibold text-slate-950">Pas encore de piste de formation</h2>
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-700">
+            {data?.message || 'Renseignez votre métier cible et générez une feuille de route pour faire apparaître des compétences à développer.'}
+          </p>
+          {!profile?.target_job_title && (
+            <Link to="/profil" className="mt-6 inline-flex min-h-11 items-center justify-center rounded-full bg-slate-950 px-6 py-3 text-sm font-semibold text-white hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2">
+              Renseigner mon métier cible
+            </Link>
+          )}
+        </section>
+      ) : (
+        <>
+          <section className="rounded-[1.5rem] bg-white p-6 ring-1 ring-slate-200 sm:p-8">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <h2 className="text-2xl font-semibold text-slate-950">Compétences identifiées</h2>
+                <p className="mt-2 text-sm text-slate-700">À partir de votre feuille de route enregistrée.</p>
+              </div>
+              <span className="text-sm text-slate-600">{recommendations.length} compétence{recommendations.length > 1 ? 's' : ''}</span>
             </div>
-          </div>
-
-          <div className="rounded-4xl bg-white p-6 shadow-[0_25px_70px_-40px_rgba(15,23,42,0.18)] ring-1 ring-slate-200">
-            <p className="text-sm uppercase tracking-[0.24em] text-cyan-600">Cours suggérés</p>
-            <div className="mt-5 space-y-4">
-              {COURSES.map((course) => (
-                <div key={course.title} className="rounded-3xl bg-slate-50 p-5 ring-1 ring-slate-200">
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <h3 className="text-base font-semibold text-slate-950">{course.title}</h3>
-                      <p className="mt-1 text-sm text-slate-500">{course.provider} · {course.duration}</p>
-                    </div>
-                    <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">{course.match}</span>
-                  </div>
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {course.tags.map((tag) => (
-                      <span key={tag} className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">{tag}</span>
-                    ))}
-                  </div>
-                </div>
+            <ul className="mt-6 divide-y divide-slate-200">
+              {recommendations.map((recommendation) => (
+                <li key={recommendation.skill} className="flex flex-col gap-2 py-4 first:pt-0 sm:flex-row sm:items-center sm:justify-between">
+                  <span className="font-medium text-slate-950">{recommendation.skill}</span>
+                  <span className="text-sm text-slate-700">Niveau visé : {recommendation.required_level}/5</span>
+                </li>
               ))}
+            </ul>
+          </section>
+
+          <section>
+            <div className="mb-5">
+              <h2 className="text-2xl font-semibold text-slate-950">Pistes de formation</h2>
+              <p className="mt-2 text-sm leading-6 text-slate-700">
+                Ces pistes sont des suggestions générées depuis les compétences métier. Les catalogues et disponibilités des plateformes ne sont pas vérifiés en temps réel.
+              </p>
             </div>
-          </div>
-        </aside>
-      </div>
+            <div className="grid gap-5 md:grid-cols-2">
+              {recommendations.flatMap((recommendation) =>
+                (recommendation.courses ?? []).map((course) => (
+                  <article key={`${recommendation.skill}-${course.name}`} className="rounded-[1.25rem] bg-white p-6 ring-1 ring-slate-200">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-cyan-800">{recommendation.skill}</p>
+                    <h3 className="mt-3 text-lg font-semibold text-slate-950">{course.name}</h3>
+                    <p className="mt-2 text-sm text-slate-700">{course.platform}</p>
+                    {course.url ? (
+                      <a href={course.url} target="_blank" rel="noreferrer" className="mt-5 inline-flex min-h-10 items-center font-semibold text-cyan-900 underline decoration-cyan-300 underline-offset-4 hover:text-cyan-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700">
+                        Consulter la formation
+                      </a>
+                    ) : (
+                      <p className="mt-5 text-xs text-slate-600">Lien de formation non renseigné</p>
+                    )}
+                  </article>
+                ))
+              )}
+            </div>
+          </section>
+        </>
+      )}
     </div>
   );
 }

@@ -1,154 +1,164 @@
 import { Link } from 'react-router-dom';
 
-const featureCards = [
-  { value: '94%', label: 'Compatibilité métier' },
-  { value: '8/10', label: 'Satisfaction IA' },
-  { value: '5 min', label: 'Création de roadmap' },
+const steps = [
+  {
+    number: '01',
+    title: 'Posez les bases',
+    description: 'Renseignez votre profil, vos études et ce qui compte pour vous.',
+  },
+  {
+    number: '02',
+    title: 'Explorez vos pistes',
+    description: 'Consultez des métiers compatibles avec vos préférences et votre projet.',
+  },
+  {
+    number: '03',
+    title: 'Préparez la suite',
+    description: 'Identifiez les prochaines étapes pour avancer vers votre objectif.',
+  },
 ];
 
-const benefits = [
+const features = [
   {
-    title: 'Tests intelligents',
-    description: 'Personnalité, QI et motivations pour aligner votre profil avec le marché.',
+    title: 'Un profil qui vous ressemble',
+    description: 'Vos réponses et votre parcours servent de point de départ à votre orientation.',
   },
   {
-    title: 'Roadmap personnalisée',
-    description: 'Un plan clair vers votre métier cible avec étapes et priorités définies.',
+    title: 'Des pistes à explorer',
+    description: 'Comparez des métiers selon vos préférences et les informations de votre profil.',
   },
   {
-    title: 'Apprentissage guidé',
-    description: 'Cours et ressources adaptés à vos compétences et objectifs professionnels.',
+    title: 'Des résultats à votre rythme',
+    description: 'Retrouvez vos questionnaires, vos pistes et vos prochaines actions dans votre espace.',
   },
 ];
 
 export default function HomePage() {
   return (
-    <div className="relative min-h-screen overflow-hidden bg-slate-50 text-slate-950">
-      <div className="absolute inset-x-0 top-0 h-96 bg-linear-to-b from-cyan-100 via-transparent to-transparent" />
-      <div className="absolute right-10 top-20 h-72 w-72 rounded-full bg-cyan-300/20 blur-3xl" />
-      <div className="absolute left-0 top-40 h-72 w-72 rounded-full bg-slate-200/70 blur-3xl" />
+    <div className="min-h-screen overflow-hidden bg-[#f5f8fa] text-slate-950">
+      <header className="relative z-10 mx-auto flex max-w-7xl items-center justify-between px-5 py-5 sm:px-8">
+        <Link to="/" className="flex items-center gap-3 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700 focus-visible:ring-offset-4">
+          <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-950 text-lg font-bold text-white">P</span>
+          <span>
+            <span className="block text-xs font-semibold uppercase tracking-[0.24em] text-cyan-800">Pathfinder AI</span>
+            <span className="mt-0.5 block text-sm text-slate-600">Votre orientation, étape par étape</span>
+          </span>
+        </Link>
 
-      <header className="relative z-10 mx-auto flex max-w-7xl items-center justify-between px-6 py-6">
-        <div className="flex items-center gap-3">
-          <span className="inline-flex h-12 w-12 items-center justify-center rounded-3xl bg-slate-950 text-white text-lg font-bold">P</span>
-          <div>
-            <p className="text-xs uppercase tracking-[0.32em] text-cyan-600">Pathfinder AI</p>
-            <p className="text-sm text-slate-600">Career Intelligence</p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3">
+        <nav aria-label="Navigation principale" className="flex items-center gap-2 sm:gap-3">
           <Link
             to="/login"
-            className="rounded-full border border-slate-200 bg-white px-5 py-2 text-sm text-slate-900 transition hover:border-cyan-300 hover:text-slate-950">
+            className="rounded-full px-4 py-2.5 text-sm font-semibold text-slate-800 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700 focus-visible:ring-offset-2"
+          >
             Connexion
           </Link>
           <Link
             to="/register"
-            className="rounded-full bg-cyan-600 px-5 py-2 text-sm font-semibold text-white shadow-xl shadow-cyan-500/20 transition hover:bg-cyan-500">
-            Création de compte
+            className="rounded-full bg-cyan-800 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_8px_20px_-10px_rgba(8,145,178,0.65)] transition hover:bg-cyan-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700 focus-visible:ring-offset-2 sm:px-5"
+          >
+            <span className="sm:hidden">Créer un compte</span>
+            <span className="hidden sm:inline">Commencer mon parcours</span>
           </Link>
-        </div>
+        </nav>
       </header>
 
-      <main className="relative z-10 mx-auto max-w-7xl px-6 pb-24 pt-10">
-        <section className="grid gap-10 xl:grid-cols-[1.05fr_0.95fr] items-center">
-          <div className="space-y-8">
-            <span className="inline-flex rounded-full bg-cyan-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-cyan-700">
-              Nouvelle expérience d’orientation IA
-            </span>
-
-            <div className="space-y-6">
-              <h1 className="max-w-3xl text-5xl font-black tracking-tight text-slate-950 sm:text-6xl">
-                Naviguez votre futur métier avec une carrière IA claire et personnalisée.
-              </h1>
-              <p className="max-w-2xl text-lg leading-8 text-slate-600">
-                Analyse de profil, recommandations métier, learning lab et roadmap de carrière réunis dans une expérience fluide et visuelle.
-              </p>
-            </div>
-
-            <div className="flex flex-col gap-4 sm:flex-row">
+      <main className="relative mx-auto max-w-7xl px-5 pb-20 pt-8 sm:px-8 sm:pt-14">
+        <div aria-hidden="true" className="pointer-events-none absolute -right-40 top-0 h-[32rem] w-[32rem] rounded-full bg-cyan-200/40 blur-3xl" />
+        <section className="relative grid items-center gap-12 lg:grid-cols-[1fr_0.88fr] lg:gap-16">
+          <div className="max-w-3xl">
+            <h1 className="text-4xl font-semibold leading-[1.08] tracking-[-0.035em] text-slate-950 sm:text-5xl lg:text-[3.65rem]">
+              Faites de votre prochain choix un projet concret.
+            </h1>
+            <p className="mt-6 max-w-2xl text-base leading-7 text-slate-700 sm:text-lg sm:leading-8">
+              Pathfinder AI vous aide à structurer votre orientation à partir de votre profil, de vos préférences et de votre projet professionnel.
+            </p>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link
                 to="/register"
-                className="inline-flex items-center justify-center rounded-full bg-slate-950 px-8 py-4 text-base font-semibold text-white shadow-xl shadow-slate-900/10 transition hover:bg-slate-800">
-                Commencer maintenant
+                className="inline-flex min-h-12 items-center justify-center rounded-full bg-slate-950 px-7 py-3 text-sm font-semibold text-white shadow-[0_12px_25px_-14px_rgba(2,6,23,0.6)] transition hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2"
+              >
+                Créer mon espace
+                <span aria-hidden="true" className="ml-2 text-lg">→</span>
               </Link>
               <Link
                 to="/pricing"
-                className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-8 py-4 text-base font-semibold text-slate-950 transition hover:border-cyan-300 hover:bg-slate-50">
-                Découvrir les offres
+                className="inline-flex min-h-12 items-center justify-center rounded-full border border-slate-300 bg-white/80 px-7 py-3 text-sm font-semibold text-slate-900 transition hover:border-slate-400 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700 focus-visible:ring-offset-2"
+              >
+                Voir les offres
               </Link>
             </div>
-
-            <div className="grid gap-4 sm:grid-cols-3">
-              {featureCards.map((stat) => (
-                <div key={stat.label} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                  <p className="text-3xl font-bold text-slate-950">{stat.value}</p>
-                  <p className="mt-2 text-sm text-slate-500">{stat.label}</p>
-                </div>
-              ))}
-            </div>
+            <p className="mt-5 text-sm text-slate-600">Commencez par votre profil, puis avancez à votre rythme.</p>
           </div>
 
-          <div className="relative overflow-hidden rounded-4xl border border-slate-200 bg-white p-8 shadow-[0_25px_70px_-45px_rgba(15,23,42,0.35)]">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(6,182,212,0.15),transparent_25%)]" />
-            <div className="relative space-y-8">
-              <div className="rounded-4xl bg-slate-50 p-8 shadow-sm ring-1 ring-slate-200">
-                <p className="text-sm uppercase tracking-[0.3em] text-cyan-600">Votre profil IA</p>
-                <h2 className="mt-4 text-3xl font-semibold text-slate-950">Analyse instantanée</h2>
-                <p className="mt-3 text-sm leading-6 text-slate-600">
-                  Bénéficiez d’une synthèse de carrière personnalisée et découvrez les compétences à renforcer pour atteindre vos objectifs.
-                </p>
+          <aside aria-label="Les étapes de votre parcours" className="relative">
+            <div aria-hidden="true" className="absolute -inset-3 rounded-[2rem] bg-cyan-200/50 blur-xl" />
+            <div className="relative overflow-hidden rounded-[1.75rem] bg-slate-950 p-6 text-white shadow-[0_28px_70px_-32px_rgba(2,6,23,0.55)] sm:p-8">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-sm font-medium text-cyan-200">Votre parcours d’orientation</p>
+                  <h2 className="mt-2 text-2xl font-semibold tracking-tight">Un cap, une étape après l’autre.</h2>
+                </div>
+                <span aria-hidden="true" className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/10 text-cyan-200">
+                  <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6" stroke="currentColor" strokeWidth="1.7">
+                    <path d="M4 18.5 9 13l3 2.5 7-9" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M14.5 6.5H19V11" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </span>
               </div>
 
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
-                  <p className="text-sm uppercase tracking-[0.24em] text-cyan-600">Personnalité</p>
-                  <p className="mt-4 text-2xl font-semibold text-slate-950">Adapté</p>
-                  <p className="mt-2 text-sm leading-6 text-slate-600">Recommandation alignée à vos motivations.</p>
-                </div>
-                <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
-                  <p className="text-sm uppercase tracking-[0.24em] text-cyan-600">Compétences</p>
-                  <p className="mt-4 text-2xl font-semibold text-slate-950">Recommandées</p>
-                  <p className="mt-2 text-sm leading-6 text-slate-600">Les actions prioritaires pour progresser rapidement.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="mt-16 rounded-4xl border border-slate-200 bg-white p-10 shadow-sm">
-          <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr] items-center">
-            <div>
-              <p className="text-sm uppercase tracking-[0.3em] text-cyan-600">Pourquoi Pathfinder AI</p>
-              <h2 className="mt-4 text-3xl font-bold text-slate-950">Un accompagnement complet vers votre futur métier.</h2>
-              <p className="mt-4 max-w-xl text-slate-600">
-                Combinez l’intelligence artificielle, des tests métiers et une feuille de route orientée action pour construire un parcours sûr et efficace.
+              <ol className="mt-8 space-y-0">
+                {steps.map((step, index) => (
+                  <li key={step.number} className="relative flex gap-4 pb-7 last:pb-0">
+                    {index < steps.length - 1 && (
+                      <span aria-hidden="true" className="absolute left-[1.05rem] top-10 h-[calc(100%-1.4rem)] w-px bg-slate-700" />
+                    )}
+                    <span className="relative z-10 flex h-[2.15rem] w-[2.15rem] shrink-0 items-center justify-center rounded-full border border-cyan-300/40 bg-cyan-300/10 text-xs font-semibold text-cyan-100">
+                      {step.number}
+                    </span>
+                    <span className="pt-0.5">
+                      <span className="block font-semibold text-white">{step.title}</span>
+                      <span className="mt-1 block text-sm leading-6 text-slate-300">{step.description}</span>
+                    </span>
+                  </li>
+                ))}
+              </ol>
+              <p className="mt-7 border-t border-slate-700 pt-5 text-xs leading-5 text-slate-400">
+                Les recommandations évoluent avec les informations que vous ajoutez à votre espace.
               </p>
             </div>
-            <div className="grid gap-4">
-              {[
-                'Profilage métier automatique',
-                'Feuille de route claire et progressive',
-                'Recommandations de formations ciblées',
-              ].map((item) => (
-                <div key={item} className="rounded-3xl bg-slate-50 p-6 ring-1 ring-slate-200">
-                  <p className="text-sm font-semibold text-slate-950">{item}</p>
-                </div>
+          </aside>
+        </section>
+
+        <section className="relative mt-20 border-t border-slate-200 pt-10 sm:mt-24 sm:pt-12">
+          <div className="grid gap-8 lg:grid-cols-[0.7fr_1.3fr] lg:gap-14">
+            <div>
+              <h2 className="max-w-sm text-2xl font-semibold leading-tight tracking-tight text-slate-950 sm:text-3xl">
+                Votre orientation part de vous.
+              </h2>
+              <p className="mt-4 max-w-sm text-sm leading-6 text-slate-700">
+                Votre espace rassemble les informations et les résultats que vous choisissez d’y renseigner.
+              </p>
+            </div>
+            <div className="divide-y divide-slate-200">
+              {features.map((feature) => (
+                <article key={feature.title} className="grid gap-2 py-5 first:pt-0 sm:grid-cols-[0.75fr_1.25fr] sm:gap-8">
+                  <h3 className="font-semibold text-slate-950">{feature.title}</h3>
+                  <p className="text-sm leading-6 text-slate-700">{feature.description}</p>
+                </article>
               ))}
             </div>
           </div>
         </section>
-
-        <section className="mt-10 grid gap-6 md:grid-cols-3">
-          {benefits.map((card) => (
-            <div key={card.title} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-              <h3 className="text-xl font-semibold text-slate-950">{card.title}</h3>
-              <p className="mt-3 text-sm leading-6 text-slate-600">{card.description}</p>
-            </div>
-          ))}
-        </section>
       </main>
+
+      <footer className="border-t border-slate-200 bg-white/70">
+        <div className="mx-auto flex max-w-7xl flex-col gap-3 px-5 py-6 text-sm text-slate-600 sm:flex-row sm:items-center sm:justify-between sm:px-8">
+          <span>Pathfinder AI</span>
+          <Link to="/pricing" className="font-medium text-slate-700 underline decoration-slate-300 underline-offset-4 hover:text-slate-950">
+            Consulter les offres
+          </Link>
+        </div>
+      </footer>
     </div>
   );
 }
