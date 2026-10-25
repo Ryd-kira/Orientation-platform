@@ -10,8 +10,8 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    Frontend (à faire)                        │
-│              React / Vue / Nuxt / Next.js                    │
+│                    Frontend                                    │
+│                  React + Vite                                  │
 ├─────────────────────────────────────────────────────────────┤
 │                   API REST (Notre Backend)                   │
 │              Laravel 12 + Sanctum + SQLite                   │
@@ -174,16 +174,31 @@ Soumission des réponses (10 traits minimum) :
 }
 ```
 
-### 5.2 Test de QI (4 sous-sections)
+### 5.2 Questionnaire d'aptitudes (4 sous-sections, gratuit)
 
 ```
 POST /api/qi-tests/start                                          → Démarrer
+GET  /api/qi-tests/{id}/subsection/{subsectionId}/questions       → Charger la sous-section
 POST /api/qi-tests/{id}/subsection/{subsectionId}/answers         → Soumettre une sous-section
 GET  /api/qi-tests/{id}/results                                   → Résultats complets
 GET  /api/qi-tests/latest                                         → Dernier test
 ```
 
-Le test créé automatiquement 4 sous-sections : `logical_matrix`, `numerical_series`, `verbal_analogies`, `spatial_rotation`.
+Le test créé automatiquement 4 sous-sections : `logical_matrix`, `numerical_series`, `verbal_analogies`, `spatial_rotation`. Chaque section choisit cinq questions fixes et démarre son propre chronomètre serveur de 120 secondes.
+
+Réponse de chargement :
+
+```json
+{
+    "questions": [
+        { "id": 1, "question_text": "Complétez la série…", "options": ["108", "162", "72", "90"] }
+    ],
+    "started_at": "2026-07-01T12:00:00.000000Z",
+    "time_limit_seconds": 120
+}
+```
+
+Le client doit soumettre exactement les questions attribuées à la section et une option proposée pour chacune. Le serveur calcule le temps écoulé ; le temps envoyé par le client n'est pas utilisé. Après expiration, la section est validée avec zéro point.
 
 Soumission d'une sous-section :
 
@@ -192,25 +207,24 @@ Soumission d'une sous-section :
     "answers": [
         { "question_id": 1, "selected_answer": "162" },
         { "question_id": 2, "selected_answer": "36" }
-    ],
-    "time_spent_seconds": 120
+    ]
 }
 ```
 
-**Réponse finale (quand toutes les sections sont complétées) :**
+La soumission répond avec la sous-section mise à jour et un indicateur d'expiration. Le résultat final, disponible gratuitement via `/api/qi-tests/latest` et `/api/qi-tests/{id}/results`, contient le score indicatif et les quatre sous-sections :
 
 ```json
 {
     "id": 1,
     "status": "completed",
     "iq_score": 115,
-    "percentile": 84.13,
+    "percentile": null,
     "subsections": [...],
     "answers": [...]
 }
 ```
 
-> Le score QI = écart-type 15, moyenne 100. Gratuit, visible sur le dashboard.
+> **Limite d'interprétation :** `iq_score` est un champ historique contenant un score indicatif calculé à partir du questionnaire interne. En l'absence d'étalonnage psychométrique par tranche d'âge et d'un jeu de données normatif validé, `percentile` reste `null` et le score ne doit pas être présenté comme un QI clinique ni comme un centile de population. Le questionnaire et son résultat restent gratuits et visibles sur le dashboard.
 
 ### 5.3 Analyse Métier de Rêve
 
@@ -287,7 +301,7 @@ Retourne les 15 meilleurs métiers compatibles avec le profil, triés par score 
 - Exclusion matières détestées : -20
 - Même région : +15
 - Budget suffisant : +20 / partiel : +10 / insuffisant : -10
-- QI élevé (+130) : +15 / moyen-supérieur : +10
+- Score élevé au questionnaire d’aptitudes (+130) : +15 / moyen-supérieur : +10 (indicateur interne non standardisé)
 - Tension marché (>80%) : +20 / (>50%) : +10
 - Salaire élevé (>50k) : +10
 - Traits de personnalité compatibles : +5 chacun
@@ -477,14 +491,14 @@ POST /api/reports/generate/{type}      → Générer un rapport
 GET  /api/reports/{id}/download        → Télécharger le PDF
 ```
 
-Types disponibles : `initial` (gratuit), `qi` (premium), `complete` (premium).
+Types disponibles : `initial`, `qi` et `complete`. La génération et le téléchargement de **tous** les rapports PDF nécessitent un abonnement Premium actif et retournent `402 Payment Required` sinon. Les résultats et synthèses consultables dans l'application restent soumis aux droits de leur module, indépendamment de l'export PDF.
 
 ### Contenu des rapports
 
 | Rapport | Contenu |
 |---|---|
 | **initial** | Profil, parcours académique, test personnalité, test QI, top 5 matching |
-| **qi** | Score QI détaillé, centile, interprétation, 4 sous-sections |
+| **qi** | Score indicatif du questionnaire d’aptitudes et détail des 4 sous-sections (sans centile normatif) |
 | **complete** | **Analyse SWOT** complète + synthèse profil + top 8 matching |
 
 ### Exemple de la matrice SWOT (rapport complet)
@@ -494,8 +508,8 @@ Types disponibles : `initial` (gratuit), `qi` (premium), `complete` (premium).
 │         FORCES (S)           │       FAIBLESSES (W)         │
 ├──────────────────────────────┼──────────────────────────────┤
 │ • Budget déclaré: 15 000€    │ • Aucun objectif de carrière │
-│ • Trait: Conscienciosité 82  │ • Test de QI non complété    │
-│ • QI élevé: 115 (cent. 84%) │                              │
+│ • Trait: Conscienciosité 82  │ • Questionnaire d’aptitudes  │
+│ • Score indicatif: 115      │                              │
 ├──────────────────────────────┼──────────────────────────────┤
 │       OPPORTUNITÉS (O)       │        MENACES (T)           │
 ├──────────────────────────────┼──────────────────────────────┤
@@ -543,7 +557,7 @@ php artisan migrate --seed    → 21 métiers + 40 questions QI
 
 ---
 
-## 11. Tests (27 tests passent)
+## 11. Tests
 
 ```
 php artisan test
@@ -570,7 +584,8 @@ php artisan test
   ✓ free user cannot generate roadmap
   ✓ user can activate subscription
   ✓ user can check subscription status
-  ✓ user can generate initial report
+  ✓ free user cannot generate initial PDF report
+  ✓ premium user can generate initial PDF report
   ✓ free user cannot generate qi report
   ✓ premium user can generate complete report
   ✓ user can list reports
@@ -604,8 +619,8 @@ php artisan test
 | Accès | Routes |
 |---|---|
 | **Public** | `POST /register`, `POST /login` |
-| **Gratuit (auth)** | `/me`, `/profile`, `/academic-records`, `/personality-tests/*`, `/qi-tests/*`, `/dream-job/*`, `/career/match`, `/career/coherence`, `/reports`, `/reports/generate/initial` |
-| **Premium** | `/career/roadmap*`, `/assistant/*`, `/reports/generate/qi`, `/reports/generate/complete`, `/reports/{id}/download` |
+| **Gratuit (auth)** | `/me`, `/profile`, `/academic-records`, `/personality-tests/*`, `/qi-tests/*`, `/dream-job/*`, `/career/match`, `/career/coherence`, `/reports` |
+| **Premium** | `/career/roadmap*`, `/assistant/*`, `/reports/generate/{initial,qi,complete}`, `/reports/{id}/download` |
 | **Abonnement** | `/subscriptions/activate`, `/subscriptions/status` |
 
 ---

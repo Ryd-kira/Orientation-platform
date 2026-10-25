@@ -13,6 +13,7 @@ export default function AcademicStep() {
   const queryClient = useQueryClient();
   const { completeStep } = useWizardProgress();
   const [records, setRecords] = useState([]);
+  const [dislikedSubjects, setDislikedSubjects] = useState('');
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm({
     resolver: zodResolver(academicRecordSchema),
@@ -29,6 +30,7 @@ export default function AcademicStep() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['academic-records'] });
       reset({ diploma: '', field_of_study: '', institution: '', grade: '', start_date: '', end_date: '', disliked_subjects: [] });
+      setDislikedSubjects('');
     },
   });
 
@@ -38,7 +40,10 @@ export default function AcademicStep() {
   };
 
   const handleAdd = handleSubmit((data) => {
-    addMutation.mutate(data);
+    addMutation.mutate({
+      ...data,
+      disliked_subjects: dislikedSubjects.split(',').map((subject) => subject.trim()).filter(Boolean),
+    });
   });
 
   return (
@@ -79,12 +84,31 @@ export default function AcademicStep() {
             </div>
           </div>
           <div className="md:col-span-2">
+            <label className="block text-sm font-medium text-slate-700 mb-2" htmlFor="disliked-subjects">
+              Matières à exclure (séparées par des virgules)
+            </label>
+            <input
+              id="disliked-subjects"
+              type="text"
+              value={dislikedSubjects}
+              onChange={(event) => setDislikedSubjects(event.target.value)}
+              placeholder="Ex. Physique-Chimie, Mathématiques"
+              className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100"
+            />
+            <p className="mt-2 text-sm text-slate-700">Ces matières excluront les métiers qui demandent les compétences correspondantes.</p>
+          </div>
+          <div className="md:col-span-2">
             <button type="submit" disabled={addMutation.isPending}
               className="rounded-full bg-cyan-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-cyan-500 disabled:opacity-50">
               + Ajouter ce diplôme
             </button>
           </div>
         </form>
+        {addMutation.isError && (
+          <p className="rounded-3xl border border-red-200 bg-red-50 p-4 text-sm text-red-800" role="alert">
+            {addMutation.error?.response?.data?.message || 'Impossible d’enregistrer ce parcours scolaire.'}
+          </p>
+        )}
 
         {existingRecords?.length > 0 && (
           <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4 space-y-3">
@@ -92,7 +116,12 @@ export default function AcademicStep() {
             <ul className="space-y-2">
               {existingRecords.map((r) => (
                 <li key={r.id} className="flex items-center justify-between rounded-3xl bg-white p-4 ring-1 ring-slate-200">
-                  <span className="text-sm text-slate-700">{r.diploma} — {r.institution}</span>
+                  <span className="text-sm text-slate-900">
+                    {r.diploma} — {r.institution}
+                    {r.disliked_subjects?.length > 0 && (
+                      <span className="block text-sm text-slate-700">À exclure : {r.disliked_subjects.join(', ')}</span>
+                    )}
+                  </span>
                   <span className="text-xs text-slate-500">{r.grade}</span>
                 </li>
               ))}

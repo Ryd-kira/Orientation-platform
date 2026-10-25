@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\MarketData;
-use App\Models\SkillGap;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -30,22 +29,25 @@ class AssistantController extends Controller
             if ($targetJob) {
                 $jobData = MarketData::byJobTitle($targetJob)->first();
                 if ($jobData) {
-                    foreach (($jobData->required_skills ?? []) as $skill) {
-                        SkillGap::firstOrCreate([
-                            'user_id' => $request->user()->id,
-                            'skill_name' => $skill,
-                        ], [
-                            'career_roadmap_id' => null,
-                            'current_level' => 1,
-                            'required_level' => 5,
-                            'suggested_courses' => [
-                                ['name' => "Fondamentaux de $skill", 'platform' => 'Coursera', 'url' => null],
-                                ['name' => "Perfectionnement en $skill", 'platform' => 'Udemy', 'url' => null],
-                                ['name' => "Projet pratique : $skill", 'platform' => 'OpenClassrooms', 'url' => null],
-                            ],
-                        ]);
-                    }
-                    $skillGaps = $request->user()->skillGaps()->fresh();
+                    $recommendations = collect($jobData->required_skills ?? [])->map(fn ($skill) => [
+                        'skill' => $skill,
+                        'current_level' => 0,
+                        'required_level' => 5,
+                        'progress' => 0,
+                        'courses' => [
+                            ['name' => "Fondamentaux de $skill", 'platform' => 'MOOCs', 'url' => null],
+                            ['name' => "Perfectionnement en $skill", 'platform' => 'MOOCs', 'url' => null],
+                            ['name' => "Projet pratique : $skill", 'platform' => 'Entreprises', 'url' => null],
+                        ],
+                    ])->values();
+
+                    return response()->json([
+                        'recommendations' => $recommendations,
+                        'total_gaps' => $recommendations->count(),
+                        'message' => $recommendations->isEmpty()
+                            ? 'Aucune compétence manquante identifiée. Complétez votre profil et vos tests.'
+                            : null,
+                    ]);
                 }
             }
         }
@@ -107,7 +109,7 @@ class AssistantController extends Controller
 
         return [
             'summary' => "Profil: {$profile?->age} ans, région {$profile?->region}, budget {$profile?->budget}€. "
-                . ($qiTest ? "QI: {$qiTest->iq_score}. " : "")
+                . ($qiTest ? "Score au questionnaire d’aptitudes: {$qiTest->iq_score}. " : "")
                 . ($traitsSummary ? "Traits: [$traitsSummary]. " : "")
                 . ($dreamJob ? "Métier de rêve: {$dreamJob->job_title}. " : "")
                 . ($profile?->target_job_title ? "Objectif: {$profile->target_job_title}." : ""),
@@ -158,18 +160,19 @@ class AssistantController extends Controller
         if (str_contains($messageLower, 'qi') || str_contains($messageLower, 'test') || str_contains($messageLower, 'intelligence')) {
             $qi = $context['qi'];
             if ($qi) {
-                return "Votre score de QI est de {$qi->iq_score} (centile {$qi->percentile}%). "
-                    . "Ce score est basé sur 4 dimensions : logique matricielle, suites numériques, analogies verbales et rotation spatiale. "
-                    . "Vous pouvez voir le détail dans votre historique de tests.";
+                return "Votre score indicatif au questionnaire d’aptitudes est de {$qi->iq_score}. "
+                    . "Il résume vos réponses en logique, suites numériques, analogies verbales et raisonnement spatial. "
+                    . "Ce questionnaire n’est pas un test psychométrique standardisé et ne mesure pas un QI clinique. "
+                    . "Vous pouvez consulter le détail dans votre historique de tests.";
             }
-            return "Vous n'avez pas encore complété le test de QI. Rendez-vous dans la section « Test de QI » pour le passer gratuitement.";
+            return "Vous n'avez pas encore complété le questionnaire gratuit d’aptitudes. Rendez-vous dans la section dédiée pour le passer.";
         }
 
         return "Merci pour votre message. En tant que conseiller IA, je peux vous renseigner sur :"
             . "\n- Vos forces et faiblesses (test de personnalité)"
             . "\n- Les métiers adaptés à votre profil"
             . "\n- La cohérence budgétaire de vos choix"
-            . "\n- Votre score de QI et son interprétation"
+            . "\n- Votre résultat indicatif au questionnaire d’aptitudes"
             . "\n\nQue souhaitez-vous savoir précisément ?";
     }
 }

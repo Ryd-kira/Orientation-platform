@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import client from '../api/client';
 import { useAuth } from '../contexts/AuthContext';
 import { Link } from 'react-router-dom';
@@ -13,6 +13,11 @@ export default function AssistantPage() {
   const bottomRef = useRef(null);
 
   const isPremium = user?.subscription?.is_premium;
+  const { data: qiTest } = useQuery({
+    queryKey: ['qi-test', 'latest'],
+    queryFn: () => client.get('/qi-tests/latest').then((response) => response.data),
+    retry: false,
+  });
 
   const mutation = useMutation({
     mutationFn: (message) => client.post('/assistant/counsel', { message }).then((r) => r.data),
@@ -57,11 +62,18 @@ export default function AssistantPage() {
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
               <p className="text-sm uppercase tracking-[0.3em] text-cyan-600">Conseiller IA</p>
-                  <h1 className="mt-3 text-3xl font-semibold text-slate-950">Discussion intelligente avec votre assistant carrière</h1>
-              <p className="mt-2 text-sm leading-6 text-slate-600">Posez vos questions, analysez vos options et obtenez une aide personnalisée basée sur votre profil.</p>
+              <h1 className="mt-3 text-3xl font-semibold text-slate-950">Échangez sur votre projet professionnel</h1>
+              <p className="mt-2 text-sm leading-6 text-slate-600">Posez vos questions sur votre profil, vos métiers cibles et votre budget.</p>
             </div>
-                <div className="rounded-3xl bg-cyan-50 px-4 py-3 text-sm text-cyan-700 ring-1 ring-cyan-100">QI estimé : 115</div>
+            {qiTest?.status === 'completed' && (
+              <div className="rounded-3xl bg-cyan-50 px-4 py-3 text-sm text-cyan-900 ring-1 ring-cyan-100">
+                Score indicatif aux aptitudes : {qiTest.iq_score}
+              </div>
+            )}
           </div>
+          <p className="mt-6 rounded-2xl border border-cyan-200 bg-cyan-50 p-4 text-sm leading-6 text-cyan-950">
+            L’assistant actuel s’appuie sur des règles et les informations enregistrées dans votre profil. Il ne consulte pas de modèle d’IA externe ni de données de marché en direct.
+          </p>
         </div>
 
         <div className="rounded-4xl bg-white p-6 shadow-[0_25px_70px_-40px_rgba(15,23,42,0.18)] ring-1 ring-slate-200">

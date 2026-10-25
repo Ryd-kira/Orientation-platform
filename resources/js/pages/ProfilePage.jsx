@@ -19,6 +19,15 @@ export default function ProfilePage() {
   const { register, handleSubmit, formState: { isSubmitting } } = useForm({
     values: user?.profile || {},
   });
+  const profileFields = [
+    user?.profile?.age,
+    user?.profile?.city,
+    user?.profile?.region,
+    user?.profile?.budget,
+    user?.profile?.target_job_title,
+    user?.profile?.bio,
+  ];
+  const completedProfileFields = profileFields.filter((value) => value !== null && value !== undefined && value !== '').length;
 
   const updateMutation = useMutation({
     mutationFn: (data) => client.put('/profile', data).then((r) => r.data),
@@ -47,8 +56,8 @@ export default function ProfilePage() {
               <p className="mt-3 text-lg font-semibold text-slate-950">{subscription?.is_premium ? 'Premium' : 'Gratuit'}</p>
             </div>
             <div className="rounded-4xl bg-slate-50 p-5 ring-1 ring-slate-200">
-              <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Score IA</p>
-              <p className="mt-3 text-lg font-semibold text-slate-950">{user?.profile?.ai_readiness_score ?? 84}/100</p>
+              <p className="text-xs uppercase tracking-[0.2em] text-slate-600">Profil renseigné</p>
+              <p className="mt-3 text-lg font-semibold text-slate-950">{completedProfileFields}/{profileFields.length} informations</p>
             </div>
           </div>
         </div>
@@ -78,18 +87,16 @@ export default function ProfilePage() {
         </div>
 
         <div className="rounded-4xl bg-white p-8 shadow-[0_25px_80px_-40px_rgba(15,23,42,0.12)] ring-1 ring-slate-200">
-          <h2 className="text-2xl font-semibold text-slate-950">Statistiques</h2>
+          <h2 className="text-2xl font-semibold text-slate-950">Votre parcours</h2>
           <div className="mt-6 space-y-4">
-            {[
-              { label: 'Tests de personnalité', value: user?.profile?.personality_tests_count ?? 0 },
-              { label: 'Tests de QI', value: user?.profile?.qi_tests_count ?? 0 },
-              { label: 'Métiers matchés', value: user?.profile?.matched_careers ?? 0 },
-            ].map((stat) => (
-              <div key={stat.label} className="rounded-4xl bg-slate-50 p-5 ring-1 ring-slate-200">
-                <p className="text-sm text-slate-500">{stat.label}</p>
-                <p className="mt-2 text-2xl font-semibold text-slate-950">{stat.value}</p>
-              </div>
-            ))}
+            <div className="rounded-4xl bg-slate-50 p-5 ring-1 ring-slate-200">
+              <p className="text-sm text-slate-600">Parcours scolaire enregistré</p>
+              <p className="mt-2 text-2xl font-semibold text-slate-950">{user?.academic_records?.length ?? 0}</p>
+            </div>
+            <div className="rounded-4xl bg-slate-50 p-5 ring-1 ring-slate-200">
+              <p className="text-sm text-slate-600">Abonnement</p>
+              <p className="mt-2 text-2xl font-semibold text-slate-950">{subscription?.is_premium ? 'Premium' : 'Gratuit'}</p>
+            </div>
           </div>
         </div>
       </section>

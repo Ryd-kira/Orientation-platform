@@ -28,7 +28,7 @@ class ReportService
         $report = Report::create([
             'user_id' => $user->id,
             'type' => $type,
-            'premium_only' => in_array($type, ['qi', 'complete']),
+            'premium_only' => true,
             'file_path' => $filename,
             'generated_at' => now(),
         ]);
@@ -94,12 +94,12 @@ class ReportService
         $qiTest = $user->qiTests()->where('status', 'completed')->latest()->first();
         if ($qiTest && $qiTest->iq_score) {
             if ($qiTest->iq_score >= 110) {
-                $strengths[] = "QI élevé : {$qiTest->iq_score} (centile {$qiTest->percentile}%)";
+                $strengths[] = "Score élevé au questionnaire d’aptitudes : {$qiTest->iq_score}";
             } else {
-                $weaknesses[] = "Score QI : {$qiTest->iq_score} (centile {$qiTest->percentile}%)";
+                $weaknesses[] = "Score au questionnaire d’aptitudes : {$qiTest->iq_score}";
             }
         } else {
-            $weaknesses[] = 'Test de QI non complété';
+            $weaknesses[] = 'Questionnaire d’aptitudes non complété';
         }
 
         if ($profile?->target_job_title) {

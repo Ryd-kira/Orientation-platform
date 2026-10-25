@@ -10,7 +10,7 @@ const navItems = [
 ];
 
 export default function AppLayout() {
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -72,31 +72,35 @@ export default function AppLayout() {
 
         <div className="flex-1">
           <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur-sm lg:hidden">
-            <div className="flex items-center justify-between px-4 py-4">
-              <Link to="/dashboard" className="text-lg font-semibold text-slate-950">Pathfinder AI</Link>
+            <div className="flex items-center justify-between px-4 py-3">
+              <Link to="/dashboard" className="rounded font-semibold text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700">Pathfinder AI</Link>
               <button
                 onClick={() => navigate('/pricing')}
-                className="rounded-full bg-slate-950 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-slate-800">
+                className="min-h-10 rounded-full bg-slate-950 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700 focus-visible:ring-offset-2">
                 Premium
               </button>
             </div>
+            <nav aria-label="Navigation mobile" className="flex gap-2 overflow-x-auto px-4 pb-3">
+              {navItems.map((item) => {
+                const active = location.pathname === item.to;
+                return (
+                  <Link
+                    key={item.to}
+                    to={item.to}
+                    aria-current={active ? 'page' : undefined}
+                    className={`inline-flex min-h-10 shrink-0 items-center rounded-full px-3 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700 focus-visible:ring-offset-2 ${
+                      active ? 'bg-slate-950 text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-950'
+                    }`}
+                  >
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </nav>
           </header>
 
           <main className="px-4 py-6 sm:px-6 lg:px-10">
             <div className="max-w-7xl mx-auto space-y-6">
-              <div className="rounded-4xl bg-white p-6 shadow-[0_25px_60px_-30px_rgba(15,23,42,0.25)] ring-1 ring-slate-200">
-                <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                  <div>
-                    <p className="text-sm uppercase tracking-[0.24em] text-cyan-600">Tableau de bord</p>
-                    <h1 className="mt-2 text-3xl font-semibold text-slate-950">Bonjour, {user?.name}</h1>
-                    <p className="mt-2 text-sm text-slate-600">Votre espace Pathfinder AI pour suivre vos tests, votre roadmap et votre conseiller.</p>
-                  </div>
-                  <div className="inline-flex items-center gap-3 rounded-full bg-slate-50 px-4 py-3 text-sm text-slate-700">
-                    <span className="h-3 w-3 rounded-full bg-emerald-500" />
-                    {user?.subscription?.is_premium ? 'Premium activé' : 'Plan Gratuit'}
-                  </div>
-                </div>
-              </div>
               <Outlet />
             </div>
           </main>
